@@ -9,7 +9,7 @@ export const LandingPage = () => {
           Your Dream, Expertly Crafted.
         </h1>
         <p className="text-slate-muted text-base md:text-lg">
-          Platform manajemen internal & reservasi terpadu Fattah Wedding Organizer. Menghubungkan client, admin, dan kru profesional.
+          Transforming your vision into a flawless reality. WeddingPro offers premier organizational services for couples who demand perfection and sophisticated design on their special day.
         </p>
       </div>
 

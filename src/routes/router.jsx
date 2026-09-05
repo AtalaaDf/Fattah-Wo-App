@@ -1,6 +1,9 @@
 import React from 'react'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 
+// Route Guard
+import ProtectedRoute from './ProtectedRoute'
+
 // Layouts
 import PublicLayout from '../layouts/PublicLayout'
 import AdminLayout from '../layouts/AdminLayout'
@@ -44,37 +47,52 @@ export const router = createBrowserRouter([
   },
   {
     path: '/admin',
-    element: <AdminLayout />,
+    element: <ProtectedRoute allowedRoles={['admin']} />,
     children: [
-      { index: true, element: <Navigate to="/admin/dashboard" replace /> },
-      { path: 'dashboard', element: <AdminDashboardPage /> },
-      { path: 'worker', element: <AdminWorkerPage /> },
-      { path: 'schedule', element: <AdminSchedulePage /> },
-      { path: 'bundle', element: <AdminBundlePage /> },
-      { path: 'feedback', element: <AdminFeedbackPage /> },
+      {
+        element: <AdminLayout />,
+        children: [
+          { index: true, element: <Navigate to="/admin/dashboard" replace /> },
+          { path: 'dashboard', element: <AdminDashboardPage /> },
+          { path: 'worker', element: <AdminWorkerPage /> },
+          { path: 'schedule', element: <AdminSchedulePage /> },
+          { path: 'bundle', element: <AdminBundlePage /> },
+          { path: 'feedback', element: <AdminFeedbackPage /> },
+        ],
+      },
     ],
   },
   {
     path: '/worker',
-    element: <WorkerLayout />,
+    element: <ProtectedRoute allowedRoles={['worker']} />,
     children: [
-      { index: true, element: <Navigate to="/worker/dashboard" replace /> },
-      { path: 'dashboard', element: <WorkerDashboardPage /> },
-      { path: 'profile', element: <WorkerProfilePage /> },
-      { path: 'list', element: <WorkerListPage /> },
-      { path: 'schedule', element: <WorkerSchedulePage /> },
+      {
+        element: <WorkerLayout />,
+        children: [
+          { index: true, element: <Navigate to="/worker/dashboard" replace /> },
+          { path: 'dashboard', element: <WorkerDashboardPage /> },
+          { path: 'profile', element: <WorkerProfilePage /> },
+          { path: 'list', element: <WorkerListPage /> },
+          { path: 'schedule', element: <WorkerSchedulePage /> },
+        ],
+      },
     ],
   },
   {
     path: '/client',
-    element: <ClientLayout />,
+    element: <ProtectedRoute allowedRoles={['client']} />,
     children: [
-      { index: true, element: <Navigate to="/client/reservation" replace /> },
-      { path: 'reservation', element: <ClientReservationPage /> },
-      { path: 'reservation/new', element: <ClientNewReservationPage /> },
-      { path: 'bundle', element: <ClientBundlePage /> },
-      { path: 'schedule', element: <ClientSchedulePage /> },
-      { path: 'payment/:reservationId', element: <ClientPaymentPage /> },
+      {
+        element: <ClientLayout />,
+        children: [
+          { index: true, element: <Navigate to="/client/reservation" replace /> },
+          { path: 'reservation', element: <ClientReservationPage /> },
+          { path: 'reservation/new', element: <ClientNewReservationPage /> },
+          { path: 'bundle', element: <ClientBundlePage /> },
+          { path: 'schedule', element: <ClientSchedulePage /> },
+          { path: 'payment/:reservationId', element: <ClientPaymentPage /> },
+        ],
+      },
     ],
   },
   {
