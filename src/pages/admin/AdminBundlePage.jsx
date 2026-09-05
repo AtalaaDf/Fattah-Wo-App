@@ -1,23 +1,67 @@
-import React from 'react'
+import React, { useState } from 'react';
+import { useBundles } from '../../features/bundle/hooks/useBundles';
+import AdminBundleList from '../../features/bundle/components/AdminBundleList';
+import BundleFormModal from '../../features/bundle/components/BundleFormModal';
+import { Package } from 'lucide-react';
 
 export const AdminBundlePage = () => {
+  const { bundles, isLoading, createBundle, isCreating, updateBundle, isUpdating, deleteBundle } = useBundles();
+
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [selectedBundleForEdit, setSelectedBundleForEdit] = useState(null);
+
+  const handleSaveBundle = async ({ bundleData, features, bundleId }) => {
+    if (bundleId) {
+      await updateBundle({ bundleId, bundleData, features });
+    } else {
+      await createBundle({ bundleData, features });
+    }
+  };
+
+  const handleOpenCreate = () => {
+    setSelectedBundleForEdit(null);
+    setIsFormModalOpen(true);
+  };
+
+  const handleOpenEdit = (bundle) => {
+    setSelectedBundleForEdit(bundle);
+    setIsFormModalOpen(true);
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-heading font-bold text-primary">Kelola Bundle</h1>
-          <p className="text-sm text-slate-muted">Atur paket pernikahan & penawaran di landing page</p>
+          <h1 className="text-2xl font-heading font-bold text-slate-900 flex items-center gap-2">
+            <Package className="w-7 h-7 text-primary" />
+            Kelola Bundle Paket
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Atur pilihan paket layanan, harga, fitur checklist, dan aktifkan untuk ditampilkan di landing page.
+          </p>
         </div>
-        <button className="px-4 py-2 bg-primary text-white text-sm font-semibold rounded-md hover:bg-primary-container transition-colors">
-          + Tambah Bundle
-        </button>
       </div>
 
-      <div className="bg-white border border-outline-variant rounded-lg p-6 text-sm text-slate-500 text-center">
-        Daftar bundle & fitur paket akan ditampilkan di sini.
-      </div>
+      {/* Main List */}
+      <AdminBundleList
+        bundles={bundles}
+        isLoading={isLoading}
+        onOpenCreateModal={handleOpenCreate}
+        onOpenEditModal={handleOpenEdit}
+        onDeleteBundle={deleteBundle}
+      />
+
+      {/* Form Modal */}
+      <BundleFormModal
+        isOpen={isFormModalOpen}
+        onClose={() => setIsFormModalOpen(false)}
+        onSave={handleSaveBundle}
+        bundleToEdit={selectedBundleForEdit}
+        isSubmitting={isCreating || isUpdating}
+      />
     </div>
-  )
-}
+  );
+};
 
-export default AdminBundlePage
+export default AdminBundlePage;

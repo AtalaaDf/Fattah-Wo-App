@@ -1,18 +1,35 @@
-import React from 'react'
+import React from 'react';
+import { useWorkerProfile } from '../../features/worker-profile/hooks/useWorkerProfile';
+import WorkerProfileForm from '../../features/worker-profile/components/WorkerProfileForm';
+import { UserCheck } from 'lucide-react';
 
 export const WorkerProfilePage = () => {
+  const { details, isLoading, updateProfile, isUpdating } = useWorkerProfile();
+
   return (
-    <div className="space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Header */}
       <div>
-        <h1 className="text-2xl font-heading font-bold text-primary">Biodata & Profil Worker</h1>
-        <p className="text-sm text-slate-muted">Lengkapi data diri & kontak aktif untuk keperluan penugasan</p>
+        <h1 className="text-2xl font-heading font-bold text-slate-900 flex items-center gap-2">
+          <UserCheck className="w-7 h-7 text-primary" />
+          Biodata & Profil Worker
+        </h1>
+        <p className="text-sm text-slate-500 mt-1">
+          Lengkapi data diri dan nomor kontak aktif Anda agar Admin dapat memverifikasi dan menghubungi Anda untuk tugas acara.
+        </p>
       </div>
 
-      <div className="bg-white border border-outline-variant rounded-lg p-6 text-sm text-slate-500 text-center">
-        Form biodata worker (data diri & kontak WA) akan diisi worker di tahap berikutnya.
-      </div>
+      {isLoading ? (
+        <div className="h-64 bg-slate-100 rounded-xl animate-pulse" />
+      ) : (
+        <WorkerProfileForm
+          details={details}
+          onSave={updateProfile}
+          isSaving={isUpdating}
+        />
+      )}
     </div>
-  )
-}
+  );
+};
 
-export default WorkerProfilePage
+export default WorkerProfilePage;
