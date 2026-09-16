@@ -6,7 +6,9 @@ import Card from '../../../components/ui/Card';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
 import Button from '../../../components/ui/Button';
-import { User, Calendar, MapPin, GraduationCap, Phone, Mail, Image, Save, CheckCircle, AlertCircle, Power } from 'lucide-react';
+import { User, Calendar, MapPin, GraduationCap, Phone, Mail, Image as ImageIcon, Save, CheckCircle, AlertCircle, Power, FileImage, X } from 'lucide-react';
+import { useAuthStore } from '../../../store/useAuthStore';
+import { uploadAvatar } from '../../../lib/supabase/storage';
 
 export const WorkerProfileForm = ({ details = {}, onSave, isSaving }) => {
   const [successMessage, setSuccessMessage] = React.useState('');
@@ -33,7 +35,22 @@ export const WorkerProfileForm = ({ details = {}, onSave, isSaving }) => {
     },
   });
 
+  const { user } = useAuthStore();
+  const [selectedFile, setSelectedFile] = React.useState(null);
+  const [filePreview, setFilePreview] = React.useState(details.profile_photo_url || null);
+  const fileInputRef = React.useRef(null);
+  const [isUploading, setIsUploading] = React.useState(false);
+
   const isAvailable = watch('is_available');
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setSelectedFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setFilePreview(reader.result);
+    reader.readAsDataURL(file);
+  };
 
   useEffect(() => {
     if (details) {
@@ -54,6 +71,20 @@ export const WorkerProfileForm = ({ details = {}, onSave, isSaving }) => {
     try {
       setSuccessMessage('');
       setErrorMessage('');
+      
+      let finalPhotoUrl = data.profile_photo_url;
+      
+      // Upload new file if selected
+      if (selectedFile) {
+        setIsUploading(true);
+        try {
+          finalPhotoUrl = await uploadAvatar(user.id, selectedFile);
+          data.profile_photo_url = finalPhotoUrl;
+        } finally {
+          setIsUploading(false);
+        }
+      }
+
       await onSave(data);
       setSuccessMessage('Biodata, kontak, dan status ketersediaan kerja berhasil disimpan!');
       setTimeout(() => setSuccessMessage(''), 4000);
@@ -165,15 +196,60 @@ export const WorkerProfileForm = ({ details = {}, onSave, isSaving }) => {
             {...register('last_education')}
           />
 
-          <div className="sm:col-span-2">
-            <Input
-              label="URL Foto Profil"
-              placeholder="https://..."
-              icon={<Image className="w-4 h-4" />}
-              helperText="Tautan foto profil Anda (bisa dari Imgur / cloud storage)"
-              error={errors.profile_photo_url?.message}
-              {...register('profile_photo_url')}
+          <div className="sm:col-span-2 space-y-2">
+            <label className="block text-xs font-semibold text-slate-700">Foto Profil Karyawan / Worker</label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileChange}
             />
+
+            {!filePreview ? (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full border-2 border-dashed border-slate-300 rounded-xl p-6 flex flex-col items-center gap-2 text-slate-500 hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors cursor-pointer"
+              >
+                <FileImage className="w-8 h-8" />
+                <span className="text-xs font-medium">Tap untuk pilih foto profil</span>
+                <span className="text-[11px] text-slate-400">JPG, PNG maks 2MB (disarankan rasio 1:1)</span>
+              </button>
+            ) : (
+              <div className="border border-slate-200 rounded-xl p-3 flex items-center gap-4 bg-slate-50">
+                <img src={filePreview} alt="preview" className="w-16 h-16 object-cover rounded-full border-2 border-white shadow-sm shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-slate-800 truncate">
+                    {selectedFile ? selectedFile.name : 'Foto Profil Saat Ini'}
+                  </p>
+                  {selectedFile && (
+                    <p className="text-[11px] text-slate-400">{(selectedFile.size / 1024).toFixed(1)} KB</p>
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="text-[11px] font-bold text-primary hover:bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20 transition-colors"
+                  >
+                    Ganti Foto
+                  </button>
+                  {selectedFile && (
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedFile(null); setFilePreview(details.profile_photo_url || null); }}
+                      className="text-[11px] font-bold text-rose-600 hover:bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-200 transition-colors"
+                    >
+                      Batal Pilih
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {/* Hidden input to keep react-hook-form happy with the current URL */}
+            <input type="hidden" {...register('profile_photo_url')} />
           </div>
         </div>
       </Card>
@@ -214,9 +290,9 @@ export const WorkerProfileForm = ({ details = {}, onSave, isSaving }) => {
 
       {/* Submit Button */}
       <div className="flex justify-end pt-2">
-        <Button type="submit" size="lg" isLoading={isSaving}>
+        <Button type="submit" size="lg" isLoading={isSaving || isUploading}>
           <Save className="w-4 h-4 mr-2" />
-          Simpan Perubahan Biodata & Status
+          {isUploading ? 'Mengunggah...' : 'Simpan Perubahan Biodata & Status'}
         </Button>
       </div>
     </form>

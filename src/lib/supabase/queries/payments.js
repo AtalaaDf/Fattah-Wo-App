@@ -15,19 +15,19 @@ export async function getPaymentByReservationId(reservationId) {
 }
 
 /**
- * Client uploads payment receipt photo (proof_url)
- * Status in reservations stays pending until verified by Admin.
+ * Client uploads payment receipt photo (proof_url) + sets method & type.
+ * NOTE: paid_at, admin_notes, dp_amount, total_amount are ADMIN-ONLY fields.
+ * Trigger `trg_protect_payment_fields` will reject any client attempt to set them.
+ * Storage path convention: payment-proofs/{reservationId}/filename
  */
-export async function submitPaymentProofPhoto({ reservationId, totalAmount, proofUrl, method, paymentType }) {
+export async function submitPaymentProofPhoto({ reservationId, proofUrl, method, paymentType }) {
   const { data, error } = await supabase
     .from('payments')
     .upsert({
       reservation_id: reservationId,
-      total_amount: parseFloat(totalAmount || 0),
       proof_url: proofUrl,
       method: method || 'bank_transfer',
       payment_type: paymentType || 'full',
-      paid_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }, { onConflict: 'reservation_id' })
     .select()
@@ -39,9 +39,10 @@ export async function submitPaymentProofPhoto({ reservationId, totalAmount, proo
 
 /**
  * ADMIN ONLY: Verify photo & update payment status (unpaid -> dp_paid or paid)
+ * Admin can also update admin_notes, paid_at, dp_amount, total_amount.
  */
-export async function adminUpdatePaymentStatus({ reservationId, paymentStatus, adminNotes }) {
-  // Update payment status in reservations
+export async function adminUpdatePaymentStatus({ reservationId, paymentStatus, adminNotes, totalAmount, dpAmount }) {
+  // Update payment_status in reservations table
   const { data: reservationData, error: resError } = await supabase
     .from('reservations')
     .update({
@@ -54,29 +55,32 @@ export async function adminUpdatePaymentStatus({ reservationId, paymentStatus, a
 
   if (resError) throw resError;
 
-  // Optionally update admin notes in payments
-  if (adminNotes !== undefined) {
-    await supabase
-      .from('payments')
-      .update({
-        admin_notes: adminNotes,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('reservation_id', reservationId);
+  // Admin updates financial fields + notes in payments table
+  const paymentUpdate = { updated_at: new Date().toISOString() };
+  if (adminNotes !== undefined) paymentUpdate.admin_notes = adminNotes;
+  if (totalAmount !== undefined) paymentUpdate.total_amount = parseFloat(totalAmount);
+  if (dpAmount !== undefined) paymentUpdate.dp_amount = parseFloat(dpAmount);
+  if (paymentStatus === 'dp_paid' || paymentStatus === 'paid') {
+    paymentUpdate.paid_at = new Date().toISOString();
   }
+
+  await supabase
+    .from('payments')
+    .update(paymentUpdate)
+    .eq('reservation_id', reservationId);
 
   return reservationData;
 }
 
 /**
- * Postpone payment (set dp_due_date & full_due_date)
+ * Postpone payment — client sets due dates only (no amount fields).
+ * total_amount must be set later by admin after verifying payment.
  */
-export async function postponePayment({ reservationId, totalAmount, dpDueDate, fullDueDate }) {
+export async function postponePayment({ reservationId, dpDueDate, fullDueDate }) {
   const { data, error } = await supabase
     .from('payments')
     .upsert({
       reservation_id: reservationId,
-      total_amount: parseFloat(totalAmount || 0),
       is_postponed: true,
       dp_due_date: dpDueDate || null,
       full_due_date: fullDueDate || null,

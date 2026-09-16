@@ -48,10 +48,6 @@ export const LoginForm = () => {
     )
   }
 
-  const handleDemoLogin = (role) => {
-    setAuthError(null)
-    login({ role, isDemo: true })
-  }
 
   return (
     <div className="w-full space-y-6">
@@ -171,35 +167,6 @@ export const LoginForm = () => {
         </Button>
       </form>
 
-      {/* Quick Demo Login Helpers */}
-      <div className="pt-4 border-t border-outline-variant space-y-2">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-muted text-center font-sans">
-          Mode Uji Cepat (Demo Mode):
-        </p>
-        <div className="grid grid-cols-3 gap-2">
-          <button
-            type="button"
-            onClick={() => handleDemoLogin('client')}
-            className="py-1.5 px-2 bg-surface hover:bg-surface-container text-primary text-xs font-semibold rounded border border-outline-variant transition-colors"
-          >
-            Demo Client
-          </button>
-          <button
-            type="button"
-            onClick={() => handleDemoLogin('worker')}
-            className="py-1.5 px-2 bg-surface hover:bg-surface-container text-primary text-xs font-semibold rounded border border-outline-variant transition-colors"
-          >
-            Demo Worker
-          </button>
-          <button
-            type="button"
-            onClick={() => handleDemoLogin('admin')}
-            className="py-1.5 px-2 bg-surface hover:bg-surface-container text-primary text-xs font-semibold rounded border border-outline-variant transition-colors"
-          >
-            Demo Admin
-          </button>
-        </div>
-      </div>
     </div>
   )
 }

@@ -8,31 +8,33 @@ import {
   assignWorkerByAdmin,
   removeWorkerFromEvent,
 } from '../../../lib/supabase/queries/schedule';
+import { adminUpdatePaymentStatus } from '../../../lib/supabase/queries/payments';
 import { useAuthStore } from '../../../store/useAuthStore';
 
 export function useSchedule() {
   const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
+  const profile = useAuthStore((state) => state.profile);
 
   // Admin Master Schedule Query
   const adminScheduleQuery = useQuery({
     queryKey: ['adminSchedule'],
     queryFn: getReservationsSchedule,
-    enabled: user?.role === 'admin',
+    enabled: profile?.role === 'admin',
   });
 
   // Worker Available Opportunities Query
   const availableEventsQuery = useQuery({
     queryKey: ['availableEvents', user?.id],
     queryFn: () => getAvailableEventsForWorker(user?.id),
-    enabled: user?.role === 'worker',
+    enabled: profile?.role === 'worker',
   });
 
   // Worker Schedule Query
   const workerScheduleQuery = useQuery({
     queryKey: ['workerSchedule', user?.id],
     queryFn: () => getWorkerSchedule(user?.id),
-    enabled: user?.role === 'worker',
+    enabled: profile?.role === 'worker',
   });
 
   // Worker Claim Event Mutation
@@ -73,6 +75,17 @@ export function useSchedule() {
     },
   });
 
+  // Admin Update Payment Status Mutation (verify proof photo)
+  const updatePaymentStatusMutation = useMutation({
+    mutationFn: ({ reservationId, paymentStatus, adminNotes, totalAmount, dpAmount }) =>
+      adminUpdatePaymentStatus({ reservationId, paymentStatus, adminNotes, totalAmount, dpAmount }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminSchedule'] });
+      queryClient.invalidateQueries({ queryKey: ['payment'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
+    },
+  });
+
   return {
     adminEvents: adminScheduleQuery.data || [],
     isAdminLoading: adminScheduleQuery.isLoading,
@@ -95,5 +108,8 @@ export function useSchedule() {
 
     removeWorker: removeMutation.mutateAsync,
     isRemoving: removeMutation.isPending,
+
+    updatePaymentStatus: updatePaymentStatusMutation.mutateAsync,
+    isUpdatingPayment: updatePaymentStatusMutation.isPending,
   };
 }

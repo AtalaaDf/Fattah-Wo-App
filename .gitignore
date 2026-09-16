@@ -20,6 +20,8 @@ DESIGN.md
 desain.md
 SUPABASE.md
 supabase.md
+supabase_schema.sql
+supabase_rls_and_storage_fixes.sql
 !.env.example
 
 # Editor directories and files

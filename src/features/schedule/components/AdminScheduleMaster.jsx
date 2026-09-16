@@ -5,6 +5,8 @@ import Button from '../../../components/ui/Button';
 import StatusChip from '../../../components/ui/StatusChip';
 import Modal from '../../../components/ui/Modal';
 import { usePayment } from '../../payment/hooks/usePayment';
+import { getPaymentProofSignedUrl } from '../../../lib/supabase/storage';
+import { useEffect } from 'react';
 
 export const AdminScheduleMaster = ({
   events = [],
@@ -25,7 +27,35 @@ export const AdminScheduleMaster = ({
 
   // Admin View Proof & Verification Modal
   const [selectedEventForProof, setSelectedEventForProof] = useState(null);
+  const [proofSignedUrl, setProofSignedUrl] = useState('');
+  const [isLoadingProof, setIsLoadingProof] = useState(false);
   const { adminUpdateStatus, isAdminUpdating } = usePayment(selectedEventForProof?.id);
+
+  useEffect(() => {
+    async function fetchProofUrl() {
+      if (selectedEventForProof?.payments?.proof_url) {
+        // If it already looks like an absolute HTTP URL, just use it (e.g. legacy data or external links)
+        if (selectedEventForProof.payments.proof_url.startsWith('http')) {
+          setProofSignedUrl(selectedEventForProof.payments.proof_url);
+          return;
+        }
+
+        setIsLoadingProof(true);
+        try {
+          const signedUrl = await getPaymentProofSignedUrl(selectedEventForProof.payments.proof_url);
+          setProofSignedUrl(signedUrl);
+        } catch (error) {
+          console.error('Error fetching signed URL:', error);
+          setProofSignedUrl('');
+        } finally {
+          setIsLoadingProof(false);
+        }
+      } else {
+        setProofSignedUrl('');
+      }
+    }
+    fetchProofUrl();
+  }, [selectedEventForProof]);
 
   const handleOpenAssignModal = (event) => {
     setSelectedEventForAssign(event);
@@ -292,12 +322,19 @@ export const AdminScheduleMaster = ({
               Foto Struk Bukti Transfer Client:
             </label>
             <div className="h-64 rounded-xl border border-slate-200 bg-slate-100 overflow-hidden flex items-center justify-center">
-              {selectedEventForProof?.payments?.proof_url ? (
-                <img
-                  src={selectedEventForProof.payments.proof_url}
-                  alt="Bukti Transfer"
-                  className="w-full h-full object-contain bg-slate-950"
-                />
+              {isLoadingProof ? (
+                <div className="text-center text-slate-400 p-4">
+                  <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                  <p className="text-xs font-semibold">Memuat foto...</p>
+                </div>
+              ) : proofSignedUrl ? (
+                <a href={proofSignedUrl} target="_blank" rel="noopener noreferrer" className="w-full h-full block">
+                  <img
+                    src={proofSignedUrl}
+                    alt="Bukti Transfer"
+                    className="w-full h-full object-contain bg-slate-950 hover:opacity-90 transition-opacity cursor-pointer"
+                  />
+                </a>
               ) : (
                 <div className="text-center text-slate-400 p-4">
                   <ImageIcon className="w-10 h-10 mx-auto mb-2 opacity-40" />

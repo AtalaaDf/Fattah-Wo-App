@@ -28,10 +28,18 @@ export async function getWorkers() {
  * Create a new worker account
  * Admin creates account with username & password.
  * Uses synthetic email: <username>@worker.fattahwo.internal
+ *
+ * WORKAROUND: supabase.auth.signUp() auto-logs into the new account,
+ * which would log out the admin. We save the admin session first,
+ * then restore it after signUp completes.
  */
 export async function createWorkerAccount({ fullName, username, password, adminId }) {
-  const syntheticEmail = `${username.toLowerCase().trim()}@worker.fattahwo.internal`;
+  const syntheticEmail = `worker_${username.toLowerCase().trim()}@gmail.com`;
 
+  // 1. Save current admin session before signUp hijacks it
+  const { data: { session: adminSession } } = await supabase.auth.getSession();
+
+  // 2. Sign up new worker (this auto-signs-in as the worker)
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email: syntheticEmail,
     password,
@@ -46,12 +54,20 @@ export async function createWorkerAccount({ fullName, username, password, adminI
 
   if (authError) throw authError;
 
-  // Update created_by in profiles if user created
+  // 3. Update created_by while we still have a valid session
   if (authData.user && adminId) {
     await supabase
       .from('profiles')
       .update({ created_by: adminId })
       .eq('id', authData.user.id);
+  }
+
+  // 4. Restore admin session so admin stays logged in
+  if (adminSession?.access_token && adminSession?.refresh_token) {
+    await supabase.auth.setSession({
+      access_token: adminSession.access_token,
+      refresh_token: adminSession.refresh_token,
+    });
   }
 
   return authData;

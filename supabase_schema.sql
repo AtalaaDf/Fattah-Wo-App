@@ -140,10 +140,19 @@ create table feedback (
 
 -- 9. HELPER FUNCTIONS & RPC
 create or replace function is_admin()
-returns boolean language sql stable as $$
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  is_adm boolean;
+begin
   select exists (
     select 1 from profiles where id = auth.uid() and role = 'admin'
-  );
+  ) into is_adm;
+  return coalesce(is_adm, false);
+end;
 $$;
 
 -- Trigger Otomatis buat Profile saat User SignUp Supabase Auth

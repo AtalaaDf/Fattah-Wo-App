@@ -3,7 +3,7 @@ import { supabase } from '../client'
 // Helper to construct synthetic internal email for worker role
 export const getWorkerEmail = (username) => {
   const cleanUsername = username.trim().toLowerCase()
-  return `${cleanUsername}@worker.fattahwo.internal`
+  return `worker_${cleanUsername}@gmail.com`
 }
 
 /**

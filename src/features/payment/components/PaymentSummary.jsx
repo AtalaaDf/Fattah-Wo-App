@@ -1,15 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import StatusChip from '../../../components/ui/StatusChip';
-import { Image, Landmark, Wallet, Calendar, Clock, Upload, CheckCircle2, ShieldCheck, AlertCircle } from 'lucide-react';
+import { Landmark, Wallet, Calendar, Clock, Upload, CheckCircle2, AlertCircle, FileImage, X } from 'lucide-react';
 import PostponePaymentModal from './PostponePaymentModal';
+import { uploadPaymentProof } from '../../../lib/supabase/storage';
 
 export const PaymentSummary = ({ reservation, payment, onSubmitProof, onPostpone, isSubmittingProof, isPostponing }) => {
   const [paymentType, setPaymentType] = useState('full'); // 'dp' | 'full'
   const [method, setMethod] = useState('bank_transfer'); // 'bank_transfer' | 'e_wallet'
-  const [proofUrl, setProofUrl] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [filePreview, setFilePreview] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
   const [isPostponeModalOpen, setIsPostponeModalOpen] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
@@ -17,22 +21,40 @@ export const PaymentSummary = ({ reservation, payment, onSubmitProof, onPostpone
   if (!reservation) return null;
 
   const bundle = reservation.bundles || {};
-  const totalAmount = bundle.price || 5000000;
-  const payAmount = paymentType === 'dp' ? totalAmount * 0.5 : totalAmount;
+  // totalAmount is now ADMIN-VERIFIED from the payments table, not from bundle price (which is an estimate)
+  const adminVerifiedAmount = payment?.total_amount;
+  const estimatedAmount = bundle.price || 0;
+  const displayAmount = adminVerifiedAmount || estimatedAmount;
 
   const currentStatus = reservation.payment_status || 'unpaid';
   const hasUploadedProof = !!payment?.proof_url || uploadSuccess;
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setSelectedFile(file);
+    // Show preview for images
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => setFilePreview(reader.result);
+      reader.readAsDataURL(file);
+    } else {
+      setFilePreview(null);
+    }
+  };
+
   const handleProofSubmit = async (e) => {
     e.preventDefault();
-    if (!proofUrl.trim()) return;
-    await onSubmitProof({
-      totalAmount,
-      proofUrl: proofUrl.trim(),
-      method,
-      paymentType,
-    });
-    setUploadSuccess(true);
+    if (!selectedFile) return;
+    setIsUploading(true);
+    try {
+      // Upload to Supabase Storage: payment-proofs/{reservationId}/
+      const proofUrl = await uploadPaymentProof(reservation.id, selectedFile);
+      await onSubmitProof({ proofUrl, method, paymentType });
+      setUploadSuccess(true);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -69,9 +91,17 @@ export const PaymentSummary = ({ reservation, payment, onSubmitProof, onPostpone
             </span>
           </p>
           <p className="flex justify-between text-sm pt-2 border-t border-slate-100 font-bold">
-            <span className="text-slate-700">Total Biaya Reservasi:</span>
-            <span className="text-primary">Rp {Number(totalAmount).toLocaleString('id-ID')}</span>
+            <span className="text-slate-700">Estimasi Biaya:</span>
+            <span className={adminVerifiedAmount ? 'line-through text-slate-400' : 'text-primary'}>
+              Rp {Number(estimatedAmount).toLocaleString('id-ID')}
+            </span>
           </p>
+          {adminVerifiedAmount && (
+            <p className="flex justify-between text-sm font-bold">
+              <span className="text-slate-700">Total Terverifikasi Admin:</span>
+              <span className="text-emerald-600">Rp {Number(adminVerifiedAmount).toLocaleString('id-ID')}</span>
+            </p>
+          )}
         </div>
       </Card>
 
@@ -93,7 +123,7 @@ export const PaymentSummary = ({ reservation, payment, onSubmitProof, onPostpone
                 >
                   <p className="font-bold text-xs">Uang Muka (DP 50%)</p>
                   <p className="text-sm font-extrabold mt-1">
-                    Rp {Number(totalAmount * 0.5).toLocaleString('id-ID')}
+                    {displayAmount ? `Rp ${Number(displayAmount * 0.5).toLocaleString('id-ID')}` : 'Menunggu konfirmasi admin'}
                   </p>
                 </button>
 
@@ -108,7 +138,7 @@ export const PaymentSummary = ({ reservation, payment, onSubmitProof, onPostpone
                 >
                   <p className="font-bold text-xs">Pelunasan Penuh (Full)</p>
                   <p className="text-sm font-extrabold mt-1">
-                    Rp {Number(totalAmount).toLocaleString('id-ID')}
+                    {displayAmount ? `Rp ${Number(displayAmount).toLocaleString('id-ID')}` : 'Menunggu konfirmasi admin'}
                   </p>
                 </button>
               </div>
@@ -153,15 +183,48 @@ export const PaymentSummary = ({ reservation, payment, onSubmitProof, onPostpone
 
             <div>
               <h4 className="text-sm font-bold text-slate-900 mb-2">3. Unggah Foto Bukti Pembayaran</h4>
-              <Input
-                label="URL / Link Foto Bukti Transfer Struk"
-                placeholder="https://... foto/screenshot struk bukti bayar Anda"
-                icon={<Image className="w-4 h-4" />}
-                helperText="Upload foto struk atau screenshot bukti transfer Anda"
-                value={proofUrl}
-                onChange={(e) => setProofUrl(e.target.value)}
-                required
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,application/pdf"
+                className="hidden"
+                onChange={handleFileChange}
               />
+
+              {/* File picker trigger area */}
+              {!selectedFile ? (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full border-2 border-dashed border-slate-300 rounded-xl p-6 flex flex-col items-center gap-2 text-slate-500 hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors cursor-pointer"
+                >
+                  <FileImage className="w-8 h-8" />
+                  <span className="text-xs font-medium">Tap untuk pilih foto / screenshot struk transfer</span>
+                  <span className="text-[11px] text-slate-400">JPG, PNG, PDF — maks 5MB</span>
+                </button>
+              ) : (
+                <div className="border border-slate-200 rounded-xl p-3 flex items-center gap-3 bg-slate-50">
+                  {filePreview ? (
+                    <img src={filePreview} alt="preview" className="w-14 h-14 object-cover rounded-lg border border-slate-200 shrink-0" />
+                  ) : (
+                    <div className="w-14 h-14 rounded-lg bg-slate-200 flex items-center justify-center shrink-0">
+                      <FileImage className="w-6 h-6 text-slate-500" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-slate-800 truncate">{selectedFile.name}</p>
+                    <p className="text-[11px] text-slate-400">{(selectedFile.size / 1024).toFixed(1)} KB</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setSelectedFile(null); setFilePreview(null); }}
+                    className="text-slate-400 hover:text-rose-600 transition-colors p-1"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </div>
 
             {hasUploadedProof && (
@@ -185,9 +248,9 @@ export const PaymentSummary = ({ reservation, payment, onSubmitProof, onPostpone
                 Tunda Payment
               </Button>
 
-              <Button type="submit" isLoading={isSubmittingProof} className="flex-1">
+              <Button type="submit" isLoading={isSubmittingProof || isUploading} disabled={!selectedFile} className="flex-1">
                 <Upload className="w-4 h-4 mr-2" />
-                Kirim Bukti Foto Pembayaran
+                {isUploading ? 'Mengunggah...' : 'Kirim Bukti Foto Pembayaran'}
               </Button>
             </div>
           </Card>
@@ -219,7 +282,8 @@ export const PaymentSummary = ({ reservation, payment, onSubmitProof, onPostpone
         isOpen={isPostponeModalOpen}
         onClose={() => setIsPostponeModalOpen(false)}
         onConfirmPostpone={async ({ dpDueDate, fullDueDate }) => {
-          await onPostpone({ totalAmount, dpDueDate, fullDueDate });
+          // NOTE: totalAmount removed — admin sets it after payment verification
+          await onPostpone({ dpDueDate, fullDueDate });
         }}
         isSubmitting={isPostponing}
       />

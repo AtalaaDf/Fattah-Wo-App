@@ -16,8 +16,9 @@ export function usePayment(reservationId) {
   });
 
   const submitProofMutation = useMutation({
-    mutationFn: ({ totalAmount, proofUrl, method, paymentType }) =>
-      submitPaymentProofPhoto({ reservationId, totalAmount, proofUrl, method, paymentType }),
+    // NOTE: totalAmount is admin-only, do NOT pass it from client
+    mutationFn: ({ proofUrl, method, paymentType }) =>
+      submitPaymentProofPhoto({ reservationId, proofUrl, method, paymentType }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payment', reservationId] });
       queryClient.invalidateQueries({ queryKey: ['reservation', reservationId] });
@@ -41,8 +42,9 @@ export function usePayment(reservationId) {
   });
 
   const postponeMutation = useMutation({
-    mutationFn: ({ totalAmount, dpDueDate, fullDueDate }) =>
-      postponePayment({ reservationId, totalAmount, dpDueDate, fullDueDate }),
+    // NOTE: totalAmount removed — admin-only field set after payment verification
+    mutationFn: ({ dpDueDate, fullDueDate }) =>
+      postponePayment({ reservationId, dpDueDate, fullDueDate }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payment', reservationId] });
     },
