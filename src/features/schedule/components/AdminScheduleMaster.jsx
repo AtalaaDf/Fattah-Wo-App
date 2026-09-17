@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
-import { Calendar, List, MapPin, Phone, MessageSquare, UserPlus, UserX, Clock, Users, Tag, Image as ImageIcon, Eye, CheckCircle2, ShieldAlert } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Calendar, List, MapPin, Phone, MessageSquare, UserPlus, UserX, Clock, Users, Tag, Image as ImageIcon, Eye, CheckCircle2, ShieldAlert, Search, Filter } from 'lucide-react';
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
 import StatusChip from '../../../components/ui/StatusChip';
 import Modal from '../../../components/ui/Modal';
 import { usePayment } from '../../payment/hooks/usePayment';
 import { getPaymentProofSignedUrl } from '../../../lib/supabase/storage';
-import { useEffect } from 'react';
 
 export const AdminScheduleMaster = ({
   events = [],
@@ -18,6 +17,10 @@ export const AdminScheduleMaster = ({
   isRemoving,
 }) => {
   const [viewMode, setViewMode] = useState('list');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [paymentFilter, setPaymentFilter] = useState('all');
+  const [staffFilter, setStaffFilter] = useState('all');
+
   const [selectedEventForAssign, setSelectedEventForAssign] = useState(null);
   const [selectedWorkerId, setSelectedWorkerId] = useState('');
   const [selectedRoleNeeded, setSelectedRoleNeeded] = useState('');
@@ -34,7 +37,6 @@ export const AdminScheduleMaster = ({
   useEffect(() => {
     async function fetchProofUrl() {
       if (selectedEventForProof?.payments?.proof_url) {
-        // If it already looks like an absolute HTTP URL, just use it (e.g. legacy data or external links)
         if (selectedEventForProof.payments.proof_url.startsWith('http')) {
           setProofSignedUrl(selectedEventForProof.payments.proof_url);
           return;
@@ -56,6 +58,25 @@ export const AdminScheduleMaster = ({
     }
     fetchProofUrl();
   }, [selectedEventForProof]);
+
+  const filteredEvents = events.filter((event) => {
+    const activeWorkers = (event.event_workers || []).filter((ew) => ew.status === 'assigned');
+    const matchesSearch =
+      event.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.ref_code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.bundles?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesPayment =
+      paymentFilter === 'all' || event.payment_status === paymentFilter;
+
+    const matchesStaff =
+      staffFilter === 'all' ||
+      (staffFilter === 'needs_staff' && activeWorkers.length < (event.workers_needed || 1)) ||
+      (staffFilter === 'staff_full' && activeWorkers.length >= (event.workers_needed || 1));
+
+    return matchesSearch && matchesPayment && matchesStaff;
+  });
 
   const handleOpenAssignModal = (event) => {
     setSelectedEventForAssign(event);
@@ -96,35 +117,73 @@ export const AdminScheduleMaster = ({
 
   return (
     <div className="space-y-6">
-      {/* View Toggle & Controls */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setViewMode('list')}
-            className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors ${
-              viewMode === 'list'
-                ? 'bg-primary text-white shadow-xs'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            }`}
+      {/* View Toggle & Filter Controls Bar */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto flex-1">
+          {/* View Toggle */}
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg shrink-0">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-md flex items-center gap-1.5 transition-colors ${
+                viewMode === 'list'
+                  ? 'bg-white text-slate-900 shadow-xs font-bold'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <List className="w-3.5 h-3.5" />
+              List
+            </button>
+            <button
+              onClick={() => setViewMode('calendar')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-md flex items-center gap-1.5 transition-colors ${
+                viewMode === 'calendar'
+                  ? 'bg-white text-slate-900 shadow-xs font-bold'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              Kalender
+            </button>
+          </div>
+
+          {/* Search Bar */}
+          <div className="relative flex-1 max-w-sm">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Cari nama client, ref code, lokasi..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white"
+            />
+          </div>
+
+          {/* Payment Status Filter */}
+          <select
+            value={paymentFilter}
+            onChange={(e) => setPaymentFilter(e.target.value)}
+            className="px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white"
           >
-            <List className="w-3.5 h-3.5" />
-            List View
-          </button>
-          <button
-            onClick={() => setViewMode('calendar')}
-            className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors ${
-              viewMode === 'calendar'
-                ? 'bg-primary text-white shadow-xs'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            }`}
+            <option value="all">Semua Status Bayar</option>
+            <option value="unpaid">🔴 Belum Bayar</option>
+            <option value="dp_paid">🟡 DP Paid</option>
+            <option value="paid">🟢 Lunas</option>
+          </select>
+
+          {/* Staffing Filter */}
+          <select
+            value={staffFilter}
+            onChange={(e) => setStaffFilter(e.target.value)}
+            className="px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white"
           >
-            <Calendar className="w-3.5 h-3.5" />
-            Calendar View
-          </button>
+            <option value="all">Semua Kuota Kru</option>
+            <option value="needs_staff">⚠️ Butuh Tambahan Kru</option>
+            <option value="staff_full">✅ Kuota Kru Lengkap</option>
+          </select>
         </div>
 
-        <div className="text-xs text-slate-500 font-medium">
-          Total Event Acara: <span className="font-bold text-slate-800">{events.length}</span>
+        <div className="text-xs text-slate-500 font-medium shrink-0">
+          Ditampilkan: <span className="font-bold text-slate-800">{filteredEvents.length}</span> / {events.length} Event
         </div>
       </div>
 
@@ -134,18 +193,20 @@ export const AdminScheduleMaster = ({
             <div key={i} className="h-44 bg-slate-100 rounded-xl animate-pulse" />
           ))}
         </div>
-      ) : events.length === 0 ? (
+      ) : filteredEvents.length === 0 ? (
         <Card className="py-12 text-center text-slate-500">
           <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <p className="font-semibold text-slate-700">Belum Ada Jadwal Reservasi Event</p>
+          <p className="font-semibold text-slate-700">Tidak ada jadwal reservasi event ditemukan</p>
           <p className="text-sm text-slate-400 mt-1">
-            Reservasi acara yang masuk dari client akan muncul di halaman ini.
+            {searchTerm || paymentFilter !== 'all' || staffFilter !== 'all'
+              ? 'Coba ubah kata kunci pencarian atau filter status.'
+              : 'Reservasi acara yang masuk dari client akan muncul di halaman ini.'}
           </p>
         </Card>
       ) : viewMode === 'list' ? (
         /* List View */
         <div className="space-y-4">
-          {events.map((event) => {
+          {filteredEvents.map((event) => {
             const activeWorkers = (event.event_workers || []).filter((ew) => ew.status === 'assigned');
             const cancelRequests = (event.event_workers || []).filter((ew) => ew.status === 'cancel_requested');
             const cleanPhone = (event.phone || '').replace(/\D/g, '');
@@ -225,7 +286,7 @@ export const AdminScheduleMaster = ({
                     </p>
 
                     <div className="flex flex-wrap items-center gap-2">
-                      {activeWorkers.length === 0 ? (
+                      {activeWorkers.length === 0 && cancelRequests.length === 0 ? (
                         <span className="text-xs text-amber-600 font-medium italic bg-amber-50 px-2.5 py-1 rounded-md">
                           Belum ada worker mengambil/ditugaskan
                         </span>
@@ -253,11 +314,26 @@ export const AdminScheduleMaster = ({
                         })
                       )}
 
-                      {cancelRequests.length > 0 && (
-                        <div className="text-xs text-rose-700 font-bold bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full flex items-center gap-1">
-                          ⚠️ {cancelRequests.length} worker mengajukan batal
-                        </div>
-                      )}
+                      {/* Cancel Request Approval Items */}
+                      {cancelRequests.map((ew) => {
+                        const profile = ew.profiles || {};
+                        return (
+                          <div
+                            key={ew.id}
+                            className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-800"
+                          >
+                            <span>⚠️ {profile.full_name || 'Worker'} (Ajukan Batal)</span>
+                            <button
+                              type="button"
+                              onClick={() => onRemoveWorker({ eventWorkerId: ew.id, reason: 'Pengajuan pembatalan worker disetujui Admin' })}
+                              className="px-2 py-0.5 rounded-md bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-bold transition-colors"
+                              title="Setujui pembatalan worker ini"
+                            >
+                              Setujui Batal
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -278,7 +354,7 @@ export const AdminScheduleMaster = ({
       ) : (
         /* Calendar View */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {events.map((event) => (
+          {filteredEvents.map((event) => (
             <Card key={event.id} className="p-4 border-l-4 border-l-primary">
               <div className="text-xs font-bold text-primary mb-1">
                 {new Date(event.event_date).toLocaleDateString('id-ID', {
@@ -421,13 +497,23 @@ export const AdminScheduleMaster = ({
               required
             >
               <option value="">-- Pilih Worker Aktif --</option>
-              {workersList
-                .filter((w) => w.is_active)
-                .map((w) => (
-                  <option key={w.id} value={w.id}>
-                    {w.full_name} (@{w.username})
-                  </option>
-                ))}
+              {(() => {
+                const assignedWorkerIds = (selectedEventForAssign?.event_workers || [])
+                  .filter((ew) => ew.status === 'assigned' || ew.status === 'cancel_requested')
+                  .map((ew) => ew.worker_id);
+
+                return workersList
+                  .filter((w) => w.is_active && !assignedWorkerIds.includes(w.id))
+                  .map((w) => {
+                    const details = Array.isArray(w.worker_details) ? w.worker_details[0] || {} : w.worker_details || {};
+                    const isAvailable = details.is_available ?? true;
+                    return (
+                      <option key={w.id} value={w.id}>
+                        {w.full_name} (@{w.username}) — {isAvailable ? '🟢 Siap Kerja' : '🌙 Sedang Libur'}
+                      </option>
+                    );
+                  });
+              })()}
             </select>
           </div>
 
