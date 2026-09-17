@@ -1,16 +1,14 @@
 import { z } from 'zod'
 
 export const loginSchema = z.object({
-  role: z.enum(['client', 'worker', 'admin'], {
-    required_error: 'Pilih role login terlebih dahulu.',
-  }),
   identifier: z
     .string()
-    .min(1, 'Email / Username wajib diisi.'),
+    .min(1, 'Email atau username wajib diisi.'),
   password: z
     .string()
     .min(6, 'Password minimal 6 karakter.'),
 })
+
 
 export const clientRegisterSchema = z
   .object({

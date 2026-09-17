@@ -61,7 +61,14 @@ export async function getClientReservations(clientId) {
     .select(`
       *,
       bundles (*),
-      payments (*)
+      payments (*),
+      event_workers (
+        id,
+        worker_id,
+        role_needed,
+        status,
+        profiles (id, full_name, avatar_url, phone)
+      )
     `)
     .eq('client_id', clientId)
     .order('created_at', { ascending: false });
@@ -79,7 +86,14 @@ export async function getReservationById(reservationId) {
     .select(`
       *,
       bundles (*),
-      payments (*)
+      payments (*),
+      event_workers (
+        id,
+        worker_id,
+        role_needed,
+        status,
+        profiles (id, full_name, avatar_url, phone)
+      )
     `)
     .eq('id', reservationId)
     .single();

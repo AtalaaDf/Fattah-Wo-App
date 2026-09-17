@@ -1,6 +1,6 @@
 import React from 'react';
 import { useReservation } from '../../features/reservation/hooks/useReservation';
-import ClientReservationList from '../../features/reservation/components/ClientReservationList';
+import ClientScheduleList from '../../features/reservation/components/ClientScheduleList';
 import { CalendarCheck } from 'lucide-react';
 
 export const ClientSchedulePage = () => {
@@ -14,11 +14,11 @@ export const ClientSchedulePage = () => {
           Jadwal & Status Acara Saya
         </h1>
         <p className="text-sm text-slate-500 mt-1">
-          Pantau status penugasan staf kru dan konfirmasi acara Anda.
+          Pantau status penugasan staf kru dan berikan ulasan setelah acara selesai.
         </p>
       </div>
 
-      <ClientReservationList reservations={reservations} isLoading={isLoading} />
+      <ClientScheduleList reservations={reservations} isLoading={isLoading} />
     </div>
   );
 };

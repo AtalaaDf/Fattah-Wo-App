@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Mail, Lock, User, Eye, EyeOff, AlertCircle, ShieldAlert, UserCheck, Briefcase } from 'lucide-react'
+import { Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
 
 import { loginSchema } from '../schemas/authSchemas'
 import { useLoginMutation } from '../hooks/useAuthHooks'
@@ -9,7 +9,6 @@ import Button from '../../../components/ui/Button'
 import Input from '../../../components/ui/Input'
 
 export const LoginForm = () => {
-  const [selectedRole, setSelectedRole] = useState('client')
   const [showPassword, setShowPassword] = useState(false)
   const [authError, setAuthError] = useState(null)
 
@@ -18,120 +17,44 @@ export const LoginForm = () => {
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      role: 'client',
       identifier: '',
       password: '',
     },
   })
 
-  const handleRoleChange = (role) => {
-    setSelectedRole(role)
-    setValue('role', role)
-    setValue('identifier', '')
-    setAuthError(null)
-  }
-
   const onSubmit = (data) => {
     setAuthError(null)
-    login(
-      { ...data, role: selectedRole },
-      {
-        onError: (err) => {
-          setAuthError(err.message || 'Login gagal. Periksa kembali kredensial Anda.')
-        },
-      }
-    )
+    login(data, {
+      onError: (err) => {
+        setAuthError(err.message || 'Login gagal. Periksa kembali email/username dan password Anda.')
+      },
+    })
   }
 
-
   return (
-    <div className="w-full space-y-6">
-      {/* Role Selection Tabs */}
-      <div className="space-y-1.5">
-        <label className="block text-xs font-semibold uppercase tracking-wider text-on-surface-variant font-sans text-center">
-          Pilih Akses Role
-        </label>
-        <div className="grid grid-cols-3 gap-1 p-1 bg-surface-container-low border border-outline-variant rounded-lg">
-          <button
-            type="button"
-            onClick={() => handleRoleChange('client')}
-            className={`flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-semibold rounded-md transition-all font-sans ${
-              selectedRole === 'client'
-                ? 'bg-white text-primary shadow-xs border border-outline-variant/50 font-bold'
-                : 'text-slate-muted hover:text-on-surface'
-            }`}
-          >
-            <UserCheck className="w-3.5 h-3.5" />
-            <span>Client</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleRoleChange('worker')}
-            className={`flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-semibold rounded-md transition-all font-sans ${
-              selectedRole === 'worker'
-                ? 'bg-white text-primary shadow-xs border border-outline-variant/50 font-bold'
-                : 'text-slate-muted hover:text-on-surface'
-            }`}
-          >
-            <Briefcase className="w-3.5 h-3.5" />
-            <span>Worker</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleRoleChange('admin')}
-            className={`flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-semibold rounded-md transition-all font-sans ${
-              selectedRole === 'admin'
-                ? 'bg-white text-primary shadow-xs border border-outline-variant/50 font-bold'
-                : 'text-slate-muted hover:text-on-surface'
-            }`}
-          >
-            <ShieldAlert className="w-3.5 h-3.5" />
-            <span>Admin</span>
-          </button>
-        </div>
-      </div>
-
+    <div className="w-full space-y-5">
       {/* Error Banner */}
       {authError && (
-        <div className="p-3 bg-error-container/40 border border-error/30 rounded-md flex items-start gap-2.5 text-xs text-error">
+        <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2.5 text-xs text-red-700">
           <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
           <span>{authError}</span>
         </div>
       )}
 
-      {/* Main Login Form */}
+      {/* Login Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        {selectedRole === 'worker' ? (
-          <Input
-            label="Username Worker"
-            placeholder="Masukkan username (contoh: budi_wo)"
-            leftIcon={<User className="w-4 h-4" />}
-            error={errors.identifier?.message}
-            required
-            {...register('identifier')}
-          />
-        ) : (
-          <Input
-            label={`Email ${selectedRole === 'admin' ? 'Admin' : 'Client'}`}
-            type="email"
-            placeholder={
-              selectedRole === 'admin'
-                ? 'admin@fattahwo.com'
-                : 'nama@domain.com'
-            }
-            leftIcon={<Mail className="w-4 h-4" />}
-            error={errors.identifier?.message}
-            required
-            {...register('identifier')}
-          />
-        )}
+        <Input
+          label="Email atau Username"
+          placeholder="Username"
+          leftIcon={<Mail className="w-4 h-4" />}
+          error={errors.identifier?.message}
+          required
+          {...register('identifier')}
+        />
 
         <Input
           label="Password"
@@ -142,7 +65,8 @@ export const LoginForm = () => {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="text-slate-muted hover:text-on-surface focus:outline-none"
+              className="text-slate-400 hover:text-slate-600 focus:outline-none transition-colors"
+              aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
             >
               {showPassword ? (
                 <EyeOff className="w-4 h-4" />
@@ -158,15 +82,19 @@ export const LoginForm = () => {
 
         <Button
           type="submit"
-          variant="primary"
           size="lg"
           className="w-full mt-2 font-bold"
           isLoading={isPending}
         >
-          Masuk Sekarang
+          {isPending ? 'Masuk...' : 'Masuk ke Akun'}
         </Button>
       </form>
 
+      {/* Helper hint */}
+      <p className="text-center text-[11px] text-slate-400 leading-relaxed">
+        Gunakan <span className="font-semibold text-slate-500">email</span> untuk akun client atau admin,
+        dan <span className="font-semibold text-slate-500">username</span> untuk akun worker.
+      </p>
     </div>
   )
 }

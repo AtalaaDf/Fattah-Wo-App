@@ -112,9 +112,9 @@ export const LandingPage = ({ heroImageUrl }) => {
             <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
               <Calendar className="w-6 h-6" />
             </div>
-            <h3 className="font-bold text-slate-900 text-lg">KRS-Style Worker Claim</h3>
+            <h3 className="font-bold text-slate-900 text-lg">Reservasi Mudah & Cepat</h3>
             <p className="text-xs text-slate-500 leading-relaxed">
-              Worker dapat memilih dan mengklaim jadwal tugas acara sesuai ketersediaan waktu mereka dengan sistem cegah bentrok otomatis.
+              Buat reservasi acara impian Anda dalam hitungan menit — pilih paket, tentukan tanggal dan lokasi, lalu tim kami siap menangani sisanya.
             </p>
           </div>
 
