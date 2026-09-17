@@ -54,7 +54,8 @@ export const AdminLayout = () => {
         navItems={navItems}
         homeLink="/admin/dashboard"
         username={profile?.full_name || user?.email || 'Admin Fattah WO'}
-        roleLabel="Admin"
+        profilePhoto={profile?.avatar_url}
+        roleLabel="Admin System"
         isMobileOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
         onLogout={handleLogout}

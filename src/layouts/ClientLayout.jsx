@@ -64,7 +64,8 @@ export const ClientLayout = () => {
       <Sidebar
         navItems={navItems}
         homeLink="/client/reservation"
-        username={profile?.full_name || user?.email || 'Client Fattah WO'}
+        username={profile?.full_name || user?.email || 'Client Pemesan'}
+        profilePhoto={profile?.avatar_url}
         roleLabel="Client Pemesan"
         isMobileOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}

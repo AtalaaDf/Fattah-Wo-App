@@ -20,6 +20,7 @@ export const Sidebar = ({
   navItems = [],
   homeLink = '/',
   username = '',
+  profilePhoto = '',
   roleLabel = '',
   isMobileOpen = false,
   onClose,
@@ -72,9 +73,13 @@ export const Sidebar = ({
       {/* Bottom: User Info + Logout */}
       <div className="p-4 border-t border-white/10 space-y-3 shrink-0">
         <div className="flex items-center gap-3">
-          {/* Avatar initials */}
-          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold shrink-0 uppercase">
-            {username?.charAt(0) || '?'}
+          {/* Avatar initials or profile photo */}
+          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold shrink-0 uppercase overflow-hidden border border-white/20">
+            {profilePhoto ? (
+              <img src={profilePhoto} alt={username} className="w-full h-full object-cover" />
+            ) : (
+              username?.charAt(0) || '?'
+            )}
           </div>
           <div className="min-w-0">
             <p className="text-xs font-bold text-white truncate">{username || 'Pengguna'}</p>

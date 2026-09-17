@@ -53,6 +53,7 @@ export const WorkerLayout = () => {
         navItems={navItems}
         homeLink="/worker/dashboard"
         username={profile?.full_name || user?.email || 'Worker Fattah WO'}
+        profilePhoto={profile?.worker_details?.[0]?.profile_photo_url || profile?.avatar_url}
         roleLabel="Worker / Kru"
         isMobileOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
