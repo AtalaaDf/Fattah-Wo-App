@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { createClientReservation, getClientReservations, getReservationById } from '../../../lib/supabase/queries/reservations';
 import { useAuthStore } from '../../../store/useAuthStore';
 
@@ -23,6 +24,10 @@ export function useReservation(reservationId = null) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clientReservations'] });
       queryClient.invalidateQueries({ queryKey: ['adminSchedule'] });
+      toast.success('Reservasi berhasil dibuat! Tim kami akan segera menghubungi Anda.');
+    },
+    onError: (err) => {
+      toast.error(err.message || 'Gagal membuat reservasi. Silakan coba lagi.');
     },
   });
 

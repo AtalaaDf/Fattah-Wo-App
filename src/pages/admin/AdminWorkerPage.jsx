@@ -6,7 +6,7 @@ import WorkerDetailModal from '../../features/worker-management/components/Worke
 import { Users } from 'lucide-react';
 
 export const AdminWorkerPage = () => {
-  const { workers, isLoading, addWorker, isAdding, toggleStatus, isToggling } = useWorkerManagement();
+  const { workers, isLoading, addWorker, isAdding, toggleStatus, isToggling, removeWorker, isDeleting } = useWorkerManagement();
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedWorkerForDetail, setSelectedWorkerForDetail] = useState(null);
@@ -21,7 +21,7 @@ export const AdminWorkerPage = () => {
             Manajemen Worker
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Kelola akun kru wedding organizer, buat kredensial login baru, dan atur status keaktifan worker.
+            Kelola akun kru wedding organizer, buat kredensial login baru, atur pembekuan akun, atau hapus data worker.
           </p>
         </div>
       </div>
@@ -33,7 +33,9 @@ export const AdminWorkerPage = () => {
         onOpenAddModal={() => setIsAddModalOpen(true)}
         onOpenDetailModal={(worker) => setSelectedWorkerForDetail(worker)}
         onToggleStatus={(workerId, isActive) => toggleStatus({ workerId, isActive })}
+        onDeleteWorker={(workerId) => removeWorker(workerId)}
         isToggling={isToggling}
+        isDeleting={isDeleting}
       />
 
       {/* Add Worker Modal */}
@@ -49,6 +51,10 @@ export const AdminWorkerPage = () => {
         isOpen={!!selectedWorkerForDetail}
         onClose={() => setSelectedWorkerForDetail(null)}
         worker={selectedWorkerForDetail}
+        onToggleStatus={(workerId, isActive) => toggleStatus({ workerId, isActive })}
+        onDeleteWorker={(workerId) => removeWorker(workerId)}
+        isToggling={isToggling}
+        isDeleting={isDeleting}
       />
     </div>
   );

@@ -8,4 +8,5 @@ export const workerProfileSchema = z.object({
   profile_photo_url: z.string().url('URL foto tidak valid').optional().or(z.literal('')),
   contact_email: z.string().email('Email tidak valid').optional().or(z.literal('')),
   contact_phone: z.string().min(8, 'Nomor HP minimal 8 digit').optional().or(z.literal('')),
+  is_available: z.boolean().optional(),
 });

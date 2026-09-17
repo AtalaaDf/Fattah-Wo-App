@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { RouterProvider } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { Toaster } from 'sonner'
 import router from './routes/router'
 import { supabase } from './lib/supabase/client'
 import { fetchProfile } from './lib/supabase/queries/auth'
@@ -62,6 +63,15 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <RouterProvider router={router} />
+        <Toaster
+          position="top-right"
+          richColors
+          closeButton
+          toastOptions={{
+            style: { fontFamily: 'var(--font-sans, sans-serif)', fontSize: '13px' },
+            duration: 4000,
+          }}
+        />
       </AuthProvider>
     </QueryClientProvider>
   )

@@ -36,6 +36,11 @@ export const signInWithEmail = async (email, password) => {
   if (error) throw new Error(error.message)
 
   const profile = await fetchProfile(data.user.id)
+  if (profile && profile.is_active === false) {
+    await supabase.auth.signOut()
+    throw new Error('Akun Anda telah dibekukan oleh Admin. Silakan hubungi admin.')
+  }
+
   return { user: data.user, session: data.session, profile }
 }
 
@@ -52,6 +57,11 @@ export const signInWorker = async (username, password) => {
   if (error) throw new Error('Username atau password worker salah.')
 
   const profile = await fetchProfile(data.user.id)
+  if (profile && profile.is_active === false) {
+    await supabase.auth.signOut()
+    throw new Error('Akun Anda telah dibekukan oleh Admin. Silakan hubungi admin.')
+  }
+
   return { user: data.user, session: data.session, profile }
 }
 

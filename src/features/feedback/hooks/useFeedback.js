@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { getFeedbacks, createFeedback } from '../../../lib/supabase/queries/feedback';
 import { useAuthStore } from '../../../store/useAuthStore';
 
@@ -17,6 +18,11 @@ export function useFeedback() {
       createFeedback({ clientId: user?.id, reservationId, message, rating }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['feedbacks'] });
+      queryClient.invalidateQueries({ queryKey: ['reservations'] });
+      toast.success('Ulasan berhasil dikirim. Terima kasih! 🎉');
+    },
+    onError: (err) => {
+      toast.error(err.message || 'Gagal mengirim ulasan. Silakan coba lagi.');
     },
   });
 

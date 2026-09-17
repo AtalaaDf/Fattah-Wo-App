@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import { useAuthStore } from '../../../store/useAuthStore'
 import {
   signInWithEmail,
@@ -15,13 +16,9 @@ export const useLoginMutation = () => {
 
   return useMutation({
     mutationFn: async ({ identifier, password }) => {
-      // Strategy: coba email login dulu.
-      // Jika gagal DAN identifier tidak mengandung '@' (kemungkinan username worker),
-      // coba login sebagai worker dengan synthetic email.
       try {
         return await signInWithEmail(identifier, password)
       } catch (emailErr) {
-        // Jika bukan email format, coba sebagai username worker
         if (!identifier.includes('@')) {
           return await signInWorker(identifier, password)
         }
@@ -52,8 +49,12 @@ export const useRegisterMutation = () => {
     onSuccess: (data) => {
       if (data?.user && data?.profile) {
         setAuth(data.user, data.profile)
+        toast.success('Akun berhasil dibuat! Selamat datang di Fattah WO.')
         navigate('/client/reservation')
       }
+    },
+    onError: (err) => {
+      toast.error(err.message || 'Registrasi gagal. Silakan coba lagi.')
     },
   })
 }

@@ -155,3 +155,20 @@ export async function upsertWorkerDetails(profileId, details) {
   if (error) throw error;
   return data;
 }
+
+/**
+ * Delete a worker account and details (Admin)
+ */
+export async function deleteWorker(workerId) {
+  // Delete worker details child record first
+  await supabase.from('worker_details').delete().eq('profile_id', workerId);
+  
+  // Delete profile record
+  const { data, error } = await supabase
+    .from('profiles')
+    .delete()
+    .eq('id', workerId);
+
+  if (error) throw error;
+  return data;
+}

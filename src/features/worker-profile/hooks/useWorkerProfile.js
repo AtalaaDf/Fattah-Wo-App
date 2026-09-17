@@ -22,7 +22,9 @@ export function useWorkerProfile() {
 
   return {
     profile: profileQuery.data,
-    details: profileQuery.data?.worker_details || {},
+    details: Array.isArray(profileQuery.data?.worker_details) 
+      ? profileQuery.data.worker_details[0] || {}
+      : profileQuery.data?.worker_details || {},
     isLoading: profileQuery.isLoading,
     isError: profileQuery.isError,
 

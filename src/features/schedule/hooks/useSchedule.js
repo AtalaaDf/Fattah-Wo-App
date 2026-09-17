@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import {
   getReservationsSchedule,
   getAvailableEventsForWorker,
@@ -45,6 +46,10 @@ export function useSchedule() {
       queryClient.invalidateQueries({ queryKey: ['availableEvents'] });
       queryClient.invalidateQueries({ queryKey: ['workerSchedule'] });
       queryClient.invalidateQueries({ queryKey: ['adminSchedule'] });
+      toast.success('Berhasil mengambil job! Jadwal sudah diperbarui.');
+    },
+    onError: (err) => {
+      toast.error(err.message || 'Gagal mengambil job. Coba lagi.');
     },
   });
 
@@ -54,6 +59,10 @@ export function useSchedule() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workerSchedule'] });
       queryClient.invalidateQueries({ queryKey: ['adminSchedule'] });
+      toast.success('Pengajuan pembatalan berhasil dikirim ke Admin.');
+    },
+    onError: (err) => {
+      toast.error(err.message || 'Gagal mengajukan pembatalan.');
     },
   });
 
@@ -63,6 +72,10 @@ export function useSchedule() {
       assignWorkerByAdmin({ reservationId, workerId, roleNeeded }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminSchedule'] });
+      toast.success('Worker berhasil ditugaskan ke acara.');
+    },
+    onError: (err) => {
+      toast.error(err.message || 'Gagal menugaskan worker.');
     },
   });
 
@@ -72,6 +85,10 @@ export function useSchedule() {
       removeWorkerFromEvent({ eventWorkerId, adminId: user?.id, reason }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminSchedule'] });
+      toast.success('Worker berhasil dikeluarkan dari acara.');
+    },
+    onError: (err) => {
+      toast.error(err.message || 'Gagal mengeluarkan worker.');
     },
   });
 
@@ -83,6 +100,10 @@ export function useSchedule() {
       queryClient.invalidateQueries({ queryKey: ['adminSchedule'] });
       queryClient.invalidateQueries({ queryKey: ['payment'] });
       queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
+      toast.success('Status pembayaran berhasil diperbarui.');
+    },
+    onError: (err) => {
+      toast.error(err.message || 'Gagal memperbarui status pembayaran.');
     },
   });
 

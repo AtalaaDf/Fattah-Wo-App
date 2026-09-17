@@ -1,5 +1,5 @@
 import React from 'react';
-import { UserCheck, UserX, Eye, UserPlus, Search, Power } from 'lucide-react';
+import { UserCheck, UserX, Eye, UserPlus, Search, Power, Trash2 } from 'lucide-react';
 import StatusChip from '../../../components/ui/StatusChip';
 import Button from '../../../components/ui/Button';
 import Card from '../../../components/ui/Card';
@@ -11,7 +11,9 @@ export const WorkerList = ({
   onOpenAddModal,
   onOpenDetailModal,
   onToggleStatus,
+  onDeleteWorker,
   isToggling = false,
+  isDeleting = false,
 }) => {
   const [searchTerm, setSearchTerm] = React.useState('');
   const [statusFilter, setStatusFilter] = React.useState('all');
@@ -28,7 +30,7 @@ export const WorkerList = ({
       (statusFilter === 'active' && worker.is_active) ||
       (statusFilter === 'inactive' && !worker.is_active);
 
-    const details = worker.worker_details || {};
+    const details = Array.isArray(worker.worker_details) ? worker.worker_details[0] || {} : worker.worker_details || {};
     const isAvailable = details.is_available ?? true;
     const matchesAvailability =
       availabilityFilter === 'all' ||
@@ -101,8 +103,8 @@ export const WorkerList = ({
         /* Worker Grid */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredWorkers.map((worker) => {
-            const hasDetails = worker.worker_details && Object.keys(worker.worker_details).length > 0;
-            const details = worker.worker_details || {};
+            const details = Array.isArray(worker.worker_details) ? worker.worker_details[0] || {} : worker.worker_details || {};
+            const hasDetails = Object.keys(details).length > 0;
             const isAvailable = details.is_available ?? true;
 
             return (
@@ -123,23 +125,29 @@ export const WorkerList = ({
                       </div>
                     </div>
 
-                    <StatusChip status={worker.is_active ? 'active' : 'inactive'} />
-                  </div>
-
-                  {/* Worker ON / OFF Availability Status Badge */}
-                  <div className="mt-2 mb-3 flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100 text-xs">
-                    <span className="text-slate-500 font-medium flex items-center gap-1.5">
-                      <Power className="w-3.5 h-3.5" />
-                      Status Kerja:
-                    </span>
-                    <span className={`px-2 py-0.5 rounded-md font-bold text-[11px] ${
-                      isAvailable ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'
-                    }`}>
-                      {isAvailable ? '🟢 ON (Available)' : '🔴 OFF (Unavailable)'}
-                    </span>
+                    {/* Single Unified Primary Status Badge */}
+                    {!worker.is_active ? (
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                        🔴 Akun Nonaktif
+                      </span>
+                    ) : isAvailable ? (
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        🟢 Siap Kerja
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                        🌙 Sedang Libur
+                      </span>
+                    )}
                   </div>
 
                   <div className="space-y-1.5 text-xs text-slate-600 border-t border-slate-100 pt-3">
+                    <p className="flex justify-between">
+                      <span className="text-slate-400">Status Akses:</span>
+                      <span className={`font-semibold ${worker.is_active ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        {worker.is_active ? 'Akses Aktif' : 'Dibekukan'}
+                      </span>
+                    </p>
                     <p className="flex justify-between">
                       <span className="text-slate-400">Kontak WA:</span>
                       <span className="font-medium text-slate-800">{details.contact_phone || worker.phone || '-'}</span>
@@ -157,28 +165,28 @@ export const WorkerList = ({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 mt-4 pt-3 border-t border-slate-100">
+                <div className="flex items-center gap-1.5 mt-4 pt-3 border-t border-slate-100">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1 text-xs"
+                    className="flex-1 text-xs px-2"
                     onClick={() => onOpenDetailModal(worker)}
                   >
-                    <Eye className="w-3.5 h-3.5 mr-1.5" />
+                    <Eye className="w-3.5 h-3.5 mr-1" />
                     Detail
                   </Button>
 
                   <Button
                     variant={worker.is_active ? 'ghost' : 'secondary'}
                     size="sm"
-                    className={`text-xs ${worker.is_active ? 'text-rose-600 hover:bg-rose-50 hover:text-rose-700' : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'}`}
+                    className={`text-xs px-2.5 ${worker.is_active ? 'text-amber-700 bg-amber-50 hover:bg-amber-100' : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'}`}
                     disabled={isToggling}
                     onClick={() => onToggleStatus(worker.id, !worker.is_active)}
                   >
                     {worker.is_active ? (
                       <>
                         <UserX className="w-3.5 h-3.5 mr-1" />
-                        Nonaktifkan
+                        Bekukan
                       </>
                     ) : (
                       <>
@@ -187,6 +195,22 @@ export const WorkerList = ({
                       </>
                     )}
                   </Button>
+
+                  {onDeleteWorker && (
+                    <button
+                      type="button"
+                      title="Hapus Worker"
+                      disabled={isDeleting}
+                      onClick={() => {
+                        if (window.confirm(`Apakah Anda yakin ingin menghapus akun worker "${worker.full_name}" secara permanen?`)) {
+                          onDeleteWorker(worker.id);
+                        }
+                      }}
+                      className="p-2 rounded-lg text-rose-600 hover:bg-rose-50 hover:text-rose-700 border border-slate-200 hover:border-rose-200 transition-colors shrink-0 disabled:opacity-50"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
               </Card>
             );

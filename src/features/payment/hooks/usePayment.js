@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import {
   getPaymentByReservationId,
   submitPaymentProofPhoto,
@@ -24,6 +25,10 @@ export function usePayment(reservationId) {
       queryClient.invalidateQueries({ queryKey: ['reservation', reservationId] });
       queryClient.invalidateQueries({ queryKey: ['clientReservations'] });
       queryClient.invalidateQueries({ queryKey: ['adminSchedule'] });
+      toast.success('Bukti pembayaran berhasil dikirim. Tim kami akan segera memverifikasi.');
+    },
+    onError: (err) => {
+      toast.error(err.message || 'Gagal mengirim bukti pembayaran.');
     },
   });
 
@@ -38,15 +43,22 @@ export function usePayment(reservationId) {
       queryClient.invalidateQueries({ queryKey: ['adminSchedule'] });
       queryClient.invalidateQueries({ queryKey: ['payment'] });
       queryClient.invalidateQueries({ queryKey: ['clientReservations'] });
+      toast.success('Status pembayaran berhasil diperbarui.');
+    },
+    onError: (err) => {
+      toast.error(err.message || 'Gagal memperbarui status pembayaran.');
     },
   });
 
   const postponeMutation = useMutation({
-    // NOTE: totalAmount removed — admin-only field set after payment verification
     mutationFn: ({ dpDueDate, fullDueDate }) =>
       postponePayment({ reservationId, dpDueDate, fullDueDate }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payment', reservationId] });
+      toast.success('Tanggal pembayaran berhasil dijadwal ulang.');
+    },
+    onError: (err) => {
+      toast.error(err.message || 'Gagal menjadwalkan ulang pembayaran.');
     },
   });
 

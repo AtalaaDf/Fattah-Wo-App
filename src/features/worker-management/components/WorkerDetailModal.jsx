@@ -2,13 +2,22 @@ import React from 'react';
 import Modal from '../../../components/ui/Modal';
 import StatusChip from '../../../components/ui/StatusChip';
 import Button from '../../../components/ui/Button';
-import { User, Phone, Mail, Calendar, MapPin, GraduationCap, Clock } from 'lucide-react';
+import { User, Phone, Mail, Calendar, MapPin, GraduationCap, Clock, UserX, UserCheck, Trash2 } from 'lucide-react';
 
-export const WorkerDetailModal = ({ isOpen, onClose, worker }) => {
+export const WorkerDetailModal = ({
+  isOpen,
+  onClose,
+  worker,
+  onToggleStatus,
+  onDeleteWorker,
+  isToggling = false,
+  isDeleting = false,
+}) => {
   if (!worker) return null;
 
-  const details = worker.worker_details || {};
-  const hasDetails = details && Object.keys(details).length > 0;
+  const details = Array.isArray(worker.worker_details) ? worker.worker_details[0] || {} : worker.worker_details || {};
+  const hasDetails = Object.keys(details).length > 0;
+  const isAvailable = details.is_available ?? true;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Detail Biodata Worker" maxWidth="max-w-lg">
@@ -22,16 +31,42 @@ export const WorkerDetailModal = ({ isOpen, onClose, worker }) => {
               worker.full_name?.charAt(0) || 'W'
             )}
           </div>
-          <div>
+          <div className="flex-1">
             <h3 className="text-lg font-bold text-slate-900">{worker.full_name}</h3>
             <p className="text-sm text-slate-500 font-mono">@{worker.username}</p>
-            <div className="mt-1.5 flex items-center gap-2">
-              <StatusChip status={worker.is_active ? 'active' : 'inactive'} />
-              <span className="text-xs text-slate-400">
+            <div className="mt-2.5 flex flex-wrap items-center gap-2">
+              {/* Status Akun (Admin Control) */}
+              <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-semibold text-[11px] border ${
+                worker.is_active 
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                  : 'bg-rose-50 text-rose-700 border-rose-200'
+              }`}>
+                Akses: {worker.is_active ? 'Aktif' : 'Dibekukan'}
+              </span>
+
+              {/* Status Ketersediaan Kerja (Worker Control) */}
+              <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-semibold text-[11px] border ${
+                isAvailable 
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                  : 'bg-amber-50 text-amber-800 border-amber-200'
+              }`}>
+                Jadwal: {isAvailable ? '🟢 Siap Kerja' : '🌙 Sedang Libur'}
+              </span>
+            </div>
+            <div className="mt-1.5">
+              <span className="text-[10px] text-slate-400">
                 Terdaftar: {new Date(worker.created_at).toLocaleDateString('id-ID')}
               </span>
             </div>
           </div>
+        </div>
+
+        {/* Info Note for Admin Clarity */}
+        <div className="p-3 rounded-lg bg-slate-100/80 border border-slate-200 text-xs text-slate-600 flex items-start gap-2">
+          <span className="shrink-0 text-base leading-none">💡</span>
+          <p>
+            <strong className="text-slate-800">Status Akses</strong> dikontrol oleh Admin (izin login), sedangkan <strong className="text-slate-800">Status Jadwal</strong> diatur mandiri oleh Worker (siap kerja / libur).
+          </p>
         </div>
 
         {/* Details Grid */}
@@ -98,8 +133,53 @@ export const WorkerDetailModal = ({ isOpen, onClose, worker }) => {
         </div>
 
         {/* Footer Action */}
-        <div className="flex justify-end pt-3 border-t border-slate-100">
-          <Button variant="outline" onClick={onClose}>
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100">
+          <div className="flex items-center gap-2">
+            {onToggleStatus && (
+              <Button
+                variant={worker.is_active ? 'ghost' : 'secondary'}
+                size="sm"
+                className={`text-xs ${worker.is_active ? 'text-amber-700 bg-amber-50 hover:bg-amber-100' : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'}`}
+                disabled={isToggling}
+                onClick={() => {
+                  onToggleStatus(worker.id, !worker.is_active);
+                  onClose();
+                }}
+              >
+                {worker.is_active ? (
+                  <>
+                    <UserX className="w-3.5 h-3.5 mr-1" />
+                    Bekukan Akun
+                  </>
+                ) : (
+                  <>
+                    <UserCheck className="w-3.5 h-3.5 mr-1" />
+                    Aktifkan Akun
+                  </>
+                )}
+              </Button>
+            )}
+
+            {onDeleteWorker && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                disabled={isDeleting}
+                onClick={() => {
+                  if (window.confirm(`Apakah Anda yakin ingin menghapus akun worker "${worker.full_name}" secara permanen?`)) {
+                    onDeleteWorker(worker.id);
+                    onClose();
+                  }
+                }}
+              >
+                <Trash2 className="w-3.5 h-3.5 mr-1" />
+                Hapus Worker
+              </Button>
+            )}
+          </div>
+
+          <Button variant="outline" size="sm" onClick={onClose}>
             Tutup
           </Button>
         </div>
