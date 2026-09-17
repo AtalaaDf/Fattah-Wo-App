@@ -77,7 +77,7 @@ export const ClientScheduleList = ({ reservations = [], isLoading = false }) => 
             <div className="p-5">
               <h4 className="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
                 <UserCircle className="w-4 h-4 text-primary" />
-                Tim Kru Bertugas ({workers.length}/{item.workers_needed})
+                Tim Kru Bertugas ({workers.length}/{item.workers_needed} Orang)
               </h4>
               
               {workers.length > 0 ? (
@@ -85,37 +85,63 @@ export const ClientScheduleList = ({ reservations = [], isLoading = false }) => 
                   {workers.map((ew) => {
                     const profile = ew.profiles;
                     if (!profile) return null;
+                    const details = Array.isArray(profile.worker_details) ? profile.worker_details[0] || {} : profile.worker_details || {};
+                    const phone = details.contact_phone || profile.phone || '';
+                    const cleanPhone = phone.replace(/\D/g, '');
+                    const waUrl = cleanPhone ? `https://wa.me/${cleanPhone.startsWith('0') ? '62' + cleanPhone.slice(1) : cleanPhone}` : null;
+                    const photoUrl = details.profile_photo_url || profile.avatar_url;
+
                     return (
-                      <div key={ew.id} className="flex items-center gap-3 p-3 rounded-lg border border-slate-100 bg-white">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold shrink-0">
-                          {profile.full_name?.charAt(0) || '?'}
+                      <div key={ew.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-white shadow-2xs hover:border-slate-200 transition-colors">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold shrink-0 uppercase overflow-hidden border border-primary/20">
+                            {photoUrl ? (
+                              <img src={photoUrl} alt={profile.full_name} className="w-full h-full object-cover" />
+                            ) : (
+                              profile.full_name?.charAt(0) || 'W'
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-slate-900 truncate">
+                              {profile.full_name}
+                            </p>
+                            <p className="text-xs text-primary font-medium truncate">
+                              {ew.role_needed || 'Kru Acara'}
+                            </p>
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-bold text-slate-900 truncate">
-                            {profile.full_name}
-                          </p>
-                          <p className="text-xs text-slate-500 truncate">
-                            {ew.role_needed || 'Kru Acara'}
-                          </p>
-                        </div>
+
+                        {waUrl && (
+                          <a
+                            href={waUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors shrink-0"
+                            title={`Hubungi ${profile.full_name} via WhatsApp`}
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                          </a>
+                        )}
                       </div>
                     );
                   })}
                 </div>
               ) : (
-                <div className="flex items-start gap-2 p-3 bg-amber-50 text-amber-700 text-xs rounded-lg border border-amber-100">
-                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <p>
-                    Tim kami sedang mengatur dan menjadwalkan kru terbaik untuk acara Anda.
-                    Silakan cek secara berkala.
-                  </p>
+                <div className="flex items-start gap-2 p-3.5 bg-amber-50/80 text-amber-800 text-xs rounded-xl border border-amber-200/60">
+                  <AlertCircle className="w-4.5 h-4.5 shrink-0 mt-0.5 text-amber-600" />
+                  <div>
+                    <p className="font-semibold">Tim Kru Sedang Disiapkan</p>
+                    <p className="text-amber-700 mt-0.5">
+                      Tim manajemen Fattah WO sedang menyusun kru terbaik untuk acara Anda. Penugasan staf akan langsung muncul di halaman ini.
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
 
             {/* Feedback Form (Hanya jika acara selesai) */}
             {isCompleted && (
-              <div className="border-t border-slate-100 bg-slate-50 p-5">
+              <div className="border-t border-slate-100 bg-slate-50/80 p-5">
                 <FeedbackForm 
                   reservationId={item.id} 
                   onSubmit={submitFeedback}
