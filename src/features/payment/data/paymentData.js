@@ -1,0 +1,48 @@
+import { Landmark, QrCode } from 'lucide-react';
+
+export const PAYMENT_METHODS = [
+  {
+    id: 'bca',
+    name: 'Bank BCA',
+    accountName: 'Fattah Wedding Organizer',
+    accountNumber: '8835-1289-90',
+    type: 'bank',
+    badge: 'Transfer Bank',
+    color: 'border-blue-200 bg-blue-50/50 hover:bg-blue-50',
+    activeColor: 'border-blue-600 bg-blue-50 ring-2 ring-blue-500/20 text-blue-950',
+    icon: Landmark,
+  },
+  {
+    id: 'mandiri',
+    name: 'Bank Mandiri',
+    accountName: 'Fattah Wedding Organizer',
+    accountNumber: '113-00-19283-771',
+    type: 'bank',
+    badge: 'Transfer Bank',
+    color: 'border-amber-200 bg-amber-50/50 hover:bg-amber-50',
+    activeColor: 'border-amber-600 bg-amber-50 ring-2 ring-amber-500/20 text-amber-950',
+    icon: Landmark,
+  },
+  {
+    id: 'bri',
+    name: 'Bank BRI',
+    accountName: 'Fattah Wedding Organizer',
+    accountNumber: '0051-01-08293-500',
+    type: 'bank',
+    badge: 'Transfer Bank',
+    color: 'border-emerald-200 bg-emerald-50/50 hover:bg-emerald-50',
+    activeColor: 'border-emerald-600 bg-emerald-50 ring-2 ring-emerald-500/20 text-emerald-950',
+    icon: Landmark,
+  },
+  {
+    id: 'qris',
+    name: 'QRIS & E-Wallet',
+    accountName: 'Fattah WO (GoPay/OVO/Dana)',
+    accountNumber: '0812-3456-7890',
+    type: 'qris',
+    badge: 'Instant QR Code / E-Wallet',
+    color: 'border-purple-200 bg-purple-50/50 hover:bg-purple-50',
+    activeColor: 'border-purple-600 bg-purple-50 ring-2 ring-purple-500/20 text-purple-950',
+    icon: QrCode,
+  },
+];

@@ -96,7 +96,7 @@ export async function getReservationById(reservationId) {
       )
     `)
     .eq('id', reservationId)
-    .single();
+    .maybeSingle();
 
   if (error) throw error;
   return data;

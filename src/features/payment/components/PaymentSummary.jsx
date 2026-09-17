@@ -1,15 +1,18 @@
 import React, { useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
-import Input from '../../../components/ui/Input';
 import StatusChip from '../../../components/ui/StatusChip';
-import { Landmark, Wallet, Calendar, Clock, Upload, CheckCircle2, AlertCircle, FileImage, X } from 'lucide-react';
+import { Landmark, Calendar, Clock, Upload, CheckCircle2, AlertCircle, FileImage, X, Copy, Check } from 'lucide-react';
 import PostponePaymentModal from './PostponePaymentModal';
 import { uploadPaymentProof } from '../../../lib/supabase/storage';
+import { toast } from 'sonner';
+import { PAYMENT_METHODS } from '../data/paymentData';
 
 export const PaymentSummary = ({ reservation, payment, onSubmitProof, onPostpone, isSubmittingProof, isPostponing }) => {
   const [paymentType, setPaymentType] = useState('full'); // 'dp' | 'full'
-  const [method, setMethod] = useState('bank_transfer'); // 'bank_transfer' | 'e_wallet'
+  const [selectedMethodId, setSelectedMethodId] = useState('bca');
+  const [copiedAccount, setCopiedAccount] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -18,10 +21,24 @@ export const PaymentSummary = ({ reservation, payment, onSubmitProof, onPostpone
   const [isPostponeModalOpen, setIsPostponeModalOpen] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
 
-  if (!reservation) return null;
+  if (!reservation) {
+    return (
+      <Card className="py-12 text-center text-slate-500 max-w-2xl mx-auto space-y-4">
+        <AlertCircle className="w-12 h-12 text-amber-500 mx-auto" />
+        <div>
+          <p className="font-bold text-slate-800 text-base">Data Reservasi Tidak Ditemukan</p>
+          <p className="text-xs text-slate-400 mt-1">
+            Reservasi ini mungkin sedang diproses atau ID tidak valid.
+          </p>
+        </div>
+        <Link to="/client/reservation">
+          <Button variant="outline" size="sm">Kembali ke Reservasi Saya</Button>
+        </Link>
+      </Card>
+    );
+  }
 
   const bundle = reservation.bundles || {};
-  // totalAmount is now ADMIN-VERIFIED from the payments table, not from bundle price (which is an estimate)
   const adminVerifiedAmount = payment?.total_amount;
   const estimatedAmount = bundle.price || 0;
   const displayAmount = adminVerifiedAmount || estimatedAmount;
@@ -29,11 +46,19 @@ export const PaymentSummary = ({ reservation, payment, onSubmitProof, onPostpone
   const currentStatus = reservation.payment_status || 'unpaid';
   const hasUploadedProof = !!payment?.proof_url || uploadSuccess;
 
+  const currentMethodObj = PAYMENT_METHODS.find((m) => m.id === selectedMethodId) || PAYMENT_METHODS[0];
+
+  const handleCopyAccount = (number) => {
+    navigator.clipboard.writeText(number.replace(/\D/g, ''));
+    setCopiedAccount(true);
+    toast.success('Nomor rekening berhasil disalin!');
+    setTimeout(() => setCopiedAccount(false), 2500);
+  };
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     setSelectedFile(file);
-    // Show preview for images
     if (file.type.startsWith('image/')) {
       const reader = new FileReader();
       reader.onloadend = () => setFilePreview(reader.result);
@@ -48,9 +73,12 @@ export const PaymentSummary = ({ reservation, payment, onSubmitProof, onPostpone
     if (!selectedFile) return;
     setIsUploading(true);
     try {
-      // Upload to Supabase Storage: payment-proofs/{reservationId}/
       const proofUrl = await uploadPaymentProof(reservation.id, selectedFile);
-      await onSubmitProof({ proofUrl, method, paymentType });
+      await onSubmitProof({
+        proofUrl,
+        method: currentMethodObj.name,
+        paymentType,
+      });
       setUploadSuccess(true);
     } finally {
       setIsUploading(false);
@@ -66,7 +94,6 @@ export const PaymentSummary = ({ reservation, payment, onSubmitProof, onPostpone
             <span className="font-mono text-xs font-bold text-slate-500">{reservation.ref_code}</span>
             <h3 className="text-lg font-bold text-slate-900">{reservation.full_name}</h3>
           </div>
-          {/* Color Status Badges */}
           <StatusChip status={currentStatus} />
         </div>
 
@@ -91,7 +118,7 @@ export const PaymentSummary = ({ reservation, payment, onSubmitProof, onPostpone
             </span>
           </p>
           <p className="flex justify-between text-sm pt-2 border-t border-slate-100 font-bold">
-            <span className="text-slate-700">Estimasi Biaya:</span>
+            <span className="text-slate-700">Estimasi Tagihan:</span>
             <span className={adminVerifiedAmount ? 'line-through text-slate-400' : 'text-primary'}>
               Rp {Number(estimatedAmount).toLocaleString('id-ID')}
             </span>
@@ -109,81 +136,117 @@ export const PaymentSummary = ({ reservation, payment, onSubmitProof, onPostpone
       {currentStatus !== 'paid' ? (
         <form onSubmit={handleProofSubmit} className="space-y-5">
           <Card className="space-y-5">
+            {/* Step 1: Jenis Pembayaran */}
             <div>
-              <h4 className="text-sm font-bold text-slate-900 mb-2">1. Jenis Pembayaran yang Ditransfer</h4>
+              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">
+                Langkah 1: Pilih Jenis Pembayaran
+              </h4>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => setPaymentType('dp')}
-                  className={`p-3 rounded-xl border text-left transition-colors ${
+                  className={`p-3.5 rounded-xl border text-left transition-all ${
                     paymentType === 'dp'
                       ? 'border-primary bg-primary/5 text-primary ring-2 ring-primary/20'
                       : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                   }`}
                 >
                   <p className="font-bold text-xs">Uang Muka (DP 50%)</p>
-                  <p className="text-sm font-extrabold mt-1">
-                    {displayAmount ? `Rp ${Number(displayAmount * 0.5).toLocaleString('id-ID')}` : 'Menunggu konfirmasi admin'}
+                  <p className="text-sm font-extrabold mt-1 text-primary">
+                    {displayAmount ? `Rp ${Number(displayAmount * 0.5).toLocaleString('id-ID')}` : 'Menunggu admin'}
                   </p>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setPaymentType('full')}
-                  className={`p-3 rounded-xl border text-left transition-colors ${
+                  className={`p-3.5 rounded-xl border text-left transition-all ${
                     paymentType === 'full'
                       ? 'border-primary bg-primary/5 text-primary ring-2 ring-primary/20'
                       : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                   }`}
                 >
                   <p className="font-bold text-xs">Pelunasan Penuh (Full)</p>
-                  <p className="text-sm font-extrabold mt-1">
-                    {displayAmount ? `Rp ${Number(displayAmount).toLocaleString('id-ID')}` : 'Menunggu konfirmasi admin'}
+                  <p className="text-sm font-extrabold mt-1 text-primary">
+                    {displayAmount ? `Rp ${Number(displayAmount).toLocaleString('id-ID')}` : 'Menunggu admin'}
                   </p>
                 </button>
               </div>
             </div>
 
+            {/* Step 2: Top-Up Style Payment Method Selector */}
             <div>
-              <h4 className="text-sm font-bold text-slate-900 mb-2">2. Pilih Metode Rekening Transfer</h4>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setMethod('bank_transfer')}
-                  className={`p-3 rounded-xl border text-left flex items-center gap-3 transition-colors ${
-                    method === 'bank_transfer'
-                      ? 'border-primary bg-primary/5 text-primary ring-2 ring-primary/20'
-                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                  }`}
-                >
-                  <Landmark className="w-5 h-5 shrink-0" />
-                  <div>
-                    <p className="font-bold text-xs">Bank Transfer (BCA)</p>
-                    <p className="text-[11px] text-slate-400 font-mono">123-456-7890 (a.n Fattah WO)</p>
-                  </div>
-                </button>
+              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">
+                Langkah 2: Pilih Bank / Metode Transfer (Top-Up Style)
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                {PAYMENT_METHODS.map((item) => {
+                  const Icon = item.icon;
+                  const isSelected = selectedMethodId === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setSelectedMethodId(item.id)}
+                      className={`p-3 rounded-xl border text-left transition-all flex items-center justify-between ${
+                        isSelected ? item.activeColor : item.color
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className={`p-2 rounded-lg shrink-0 ${isSelected ? 'bg-white/80' : 'bg-white'}`}>
+                          <Icon className="w-4 h-4 text-slate-700" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-bold text-xs leading-tight truncate">{item.name}</p>
+                          <p className="text-[10px] text-slate-500 font-medium mt-0.5">{item.badge}</p>
+                        </div>
+                      </div>
+                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
+                        isSelected ? 'border-primary bg-primary text-white' : 'border-slate-300'
+                      }`}>
+                        {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
 
-                <button
-                  type="button"
-                  onClick={() => setMethod('e_wallet')}
-                  className={`p-3 rounded-xl border text-left flex items-center gap-3 transition-colors ${
-                    method === 'e_wallet'
-                      ? 'border-primary bg-primary/5 text-primary ring-2 ring-primary/20'
-                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                  }`}
-                >
-                  <Wallet className="w-5 h-5 shrink-0" />
-                  <div>
-                    <p className="font-bold text-xs">E-Wallet (GoPay)</p>
-                    <p className="text-[11px] text-slate-400 font-mono">0812-3456-7890 (Fattah WO)</p>
-                  </div>
-                </button>
+              {/* Destination Account Details Box */}
+              <div className="p-4 rounded-xl bg-slate-900 text-white space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-400 font-medium">Tujuan Transfer ({currentMethodObj.name}):</span>
+                  <span className="text-amber-400 font-bold">{currentMethodObj.accountName}</span>
+                </div>
+                <div className="flex items-center justify-between gap-3 pt-1 border-t border-slate-800">
+                  <span className="font-mono text-lg font-extrabold tracking-wider text-white">
+                    {currentMethodObj.accountNumber}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleCopyAccount(currentMethodObj.accountNumber)}
+                    className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 text-xs font-semibold flex items-center gap-1.5 transition-colors shrink-0"
+                  >
+                    {copiedAccount ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                        <span className="text-emerald-400">Tersalin!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Salin No. Rekening</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
 
+            {/* Step 3: Unggah Foto Bukti Transfer */}
             <div>
-              <h4 className="text-sm font-bold text-slate-900 mb-2">3. Unggah Foto Bukti Pembayaran</h4>
-              {/* Hidden file input */}
+              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">
+                Langkah 3: Unggah Foto Bukti Pembayaran
+              </h4>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -192,16 +255,15 @@ export const PaymentSummary = ({ reservation, payment, onSubmitProof, onPostpone
                 onChange={handleFileChange}
               />
 
-              {/* File picker trigger area */}
               {!selectedFile ? (
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   className="w-full border-2 border-dashed border-slate-300 rounded-xl p-6 flex flex-col items-center gap-2 text-slate-500 hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors cursor-pointer"
                 >
-                  <FileImage className="w-8 h-8" />
-                  <span className="text-xs font-medium">Tap untuk pilih foto / screenshot struk transfer</span>
-                  <span className="text-[11px] text-slate-400">JPG, PNG, PDF — maks 5MB</span>
+                  <FileImage className="w-8 h-8 text-primary" />
+                  <span className="text-xs font-bold text-slate-800">Tap di sini untuk memilih foto / screenshot struk transfer</span>
+                  <span className="text-[11px] text-slate-400">JPG, PNG, PDF (Maksimal 5MB)</span>
                 </button>
               ) : (
                 <div className="border border-slate-200 rounded-xl p-3 flex items-center gap-3 bg-slate-50">

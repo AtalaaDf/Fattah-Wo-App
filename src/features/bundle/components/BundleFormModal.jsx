@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { bundleSchema } from '../schemas/bundleSchema';
@@ -6,17 +6,24 @@ import Modal from '../../../components/ui/Modal';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
 import Button from '../../../components/ui/Button';
-import { Layers, Plus, Trash2, Tag, Check, X, Image as ImageIcon } from 'lucide-react';
+import { Layers, Plus, Trash2, Tag, Check, X, Image as ImageIcon, FileImage } from 'lucide-react';
+import { uploadBundleImage } from '../../../lib/supabase/storage';
 
 export const BundleFormModal = ({ isOpen, onClose, onSave, bundleToEdit, isSubmitting }) => {
   const [features, setFeatures] = useState([]);
   const [newFeatureLabel, setNewFeatureLabel] = useState('');
   const [newFeatureIncluded, setNewFeatureIncluded] = useState(true);
 
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [filePreview, setFilePreview] = useState(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const fileInputRef = useRef(null);
+
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(bundleSchema),
@@ -32,7 +39,17 @@ export const BundleFormModal = ({ isOpen, onClose, onSave, bundleToEdit, isSubmi
     },
   });
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setSelectedFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setFilePreview(reader.result);
+    reader.readAsDataURL(file);
+  };
+
   useEffect(() => {
+    setSelectedFile(null);
     if (bundleToEdit) {
       reset({
         name: bundleToEdit.name || '',
@@ -45,6 +62,7 @@ export const BundleFormModal = ({ isOpen, onClose, onSave, bundleToEdit, isSubmi
         display_order: bundleToEdit.display_order || 0,
       });
       setFeatures(bundleToEdit.bundle_features || []);
+      setFilePreview(bundleToEdit.image_url || null);
     } else {
       reset({
         name: '',
@@ -57,6 +75,7 @@ export const BundleFormModal = ({ isOpen, onClose, onSave, bundleToEdit, isSubmi
         display_order: 0,
       });
       setFeatures([]);
+      setFilePreview(null);
     }
   }, [bundleToEdit, reset, isOpen]);
 
@@ -81,6 +100,19 @@ export const BundleFormModal = ({ isOpen, onClose, onSave, bundleToEdit, isSubmi
   };
 
   const onSubmit = async (data) => {
+    let finalImageUrl = data.image_url;
+
+    if (selectedFile) {
+      setIsUploadingImage(true);
+      try {
+        const bundleFolder = bundleToEdit?.id || `bundle_${Date.now()}`;
+        finalImageUrl = await uploadBundleImage(bundleFolder, selectedFile);
+        data.image_url = finalImageUrl;
+      } finally {
+        setIsUploadingImage(false);
+      }
+    }
+
     await onSave({ bundleData: data, features, bundleId: bundleToEdit?.id });
     onClose();
   };
@@ -125,15 +157,48 @@ export const BundleFormModal = ({ isOpen, onClose, onSave, bundleToEdit, isSubmi
             {...register('price')}
           />
 
-          <div className="sm:col-span-2">
-            <Input
-              label="URL Gambar Cover Paket"
-              placeholder="https://..."
-              icon={<ImageIcon className="w-4 h-4" />}
-              helperText="Tautan gambar paket untuk carousel & card"
-              error={errors.image_url?.message}
-              {...register('image_url')}
+          <div className="sm:col-span-2 space-y-2">
+            <label className="block text-xs font-semibold text-slate-700">Gambar Cover Paket Bundle</label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileChange}
             />
+
+            {!filePreview ? (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full border-2 border-dashed border-slate-300 rounded-xl p-5 flex flex-col items-center gap-2 text-slate-500 hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors cursor-pointer"
+              >
+                <FileImage className="w-8 h-8 text-primary" />
+                <span className="text-xs font-bold text-slate-800">Unggah Gambar Cover Paket (Admin)</span>
+                <span className="text-[11px] text-slate-400">JPG, PNG, WebP (Rasio disarankan 16:9 atau 4:3)</span>
+              </button>
+            ) : (
+              <div className="border border-slate-200 rounded-xl p-3 flex items-center gap-3 bg-slate-50">
+                <img src={filePreview} alt="preview cover" className="w-20 h-14 object-cover rounded-lg border border-slate-200 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-slate-800 truncate">
+                    {selectedFile ? selectedFile.name : 'Cover Paket Terpasang'}
+                  </p>
+                  {selectedFile && (
+                    <p className="text-[11px] text-slate-400">{(selectedFile.size / 1024).toFixed(1)} KB</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="text-xs font-bold text-primary hover:bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20 transition-colors shrink-0"
+                >
+                  Ganti Gambar
+                </button>
+              </div>
+            )}
+
+            <input type="hidden" {...register('image_url')} />
           </div>
 
           <div className="sm:col-span-2">
