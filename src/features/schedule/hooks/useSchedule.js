@@ -8,6 +8,7 @@ import {
   requestEventCancel,
   assignWorkerByAdmin,
   removeWorkerFromEvent,
+  deleteReservation,
 } from '../../../lib/supabase/queries/schedule';
 import { adminUpdatePaymentStatus } from '../../../lib/supabase/queries/payments';
 import { useAuthStore } from '../../../store/useAuthStore';
@@ -92,6 +93,22 @@ export function useSchedule() {
     },
   });
 
+  // Admin Delete Reservation Mutation
+  const deleteReservationMutation = useMutation({
+    mutationFn: (reservationId) => deleteReservation(reservationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminSchedule'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
+      queryClient.invalidateQueries({ queryKey: ['clientReservations'] });
+      queryClient.invalidateQueries({ queryKey: ['availableEvents'] });
+      queryClient.invalidateQueries({ queryKey: ['workerSchedule'] });
+      toast.success('Event reservasi telah berhasil dihapus secara permanen.');
+    },
+    onError: (err) => {
+      toast.error(err.message || 'Gagal menghapus event reservasi.');
+    },
+  });
+
   // Admin Update Payment Status Mutation (verify proof photo)
   const updatePaymentStatusMutation = useMutation({
     mutationFn: ({ reservationId, paymentStatus, adminNotes, totalAmount, dpAmount }) =>
@@ -129,6 +146,9 @@ export function useSchedule() {
 
     removeWorker: removeMutation.mutateAsync,
     isRemoving: removeMutation.isPending,
+
+    deleteEvent: deleteReservationMutation.mutateAsync,
+    isDeleting: deleteReservationMutation.isPending,
 
     updatePaymentStatus: updatePaymentStatusMutation.mutateAsync,
     isUpdatingPayment: updatePaymentStatusMutation.isPending,

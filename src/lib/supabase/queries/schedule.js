@@ -9,13 +9,14 @@ export async function getReservationsSchedule() {
     .select(`
       *,
       bundles (id, name, price, category),
+      payments (*),
       event_workers (
         id,
         worker_id,
         role_needed,
         status,
         assigned_at,
-        profiles (id, full_name, username, avatar_url, phone, worker_details (*))
+        profiles!worker_id (id, full_name, username, avatar_url, phone)
       )
     `)
     .order('event_date', { ascending: true });
@@ -129,19 +130,45 @@ export async function requestEventCancel(eventWorkerId) {
  * Admin assigns a worker to a reservation
  */
 export async function assignWorkerByAdmin({ reservationId, workerId, roleNeeded = null }) {
-  const { data, error } = await supabase
+  const { data: existing } = await supabase
     .from('event_workers')
-    .insert({
-      reservation_id: reservationId,
-      worker_id: workerId,
-      role_needed: roleNeeded,
-      status: 'assigned',
-    })
-    .select()
-    .single();
+    .select('id')
+    .eq('reservation_id', reservationId)
+    .eq('worker_id', workerId)
+    .maybeSingle();
 
-  if (error) throw error;
-  return data;
+  if (existing && existing.id) {
+    const { data, error } = await supabase
+      .from('event_workers')
+      .update({
+        status: 'assigned',
+        role_needed: roleNeeded || 'Kru Acara',
+        assigned_at: new Date().toISOString(),
+        removed_by: null,
+        removed_reason: null,
+      })
+      .eq('id', existing.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } else {
+    const { data, error } = await supabase
+      .from('event_workers')
+      .insert({
+        reservation_id: reservationId,
+        worker_id: workerId,
+        role_needed: roleNeeded || 'Kru Acara',
+        status: 'assigned',
+        assigned_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
 }
 
 /**
@@ -161,4 +188,80 @@ export async function removeWorkerFromEvent({ eventWorkerId, adminId, reason = '
 
   if (error) throw error;
   return data;
+}
+
+/**
+ * Delete a single reservation by ID (Admin action)
+ */
+export async function deleteReservation(reservationId) {
+  // Delete related child rows first
+  await supabase.from('event_workers').delete().eq('reservation_id', reservationId);
+  await supabase.from('payments').delete().eq('reservation_id', reservationId);
+
+  const { data, error } = await supabase
+    .from('reservations')
+    .delete()
+    .eq('id', reservationId)
+    .select();
+
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Automatically clean up (delete) reservations that have passed their event date or due dates without being paid.
+ * Keeps Supabase database light and clean.
+ */
+export async function autoCleanupExpiredReservations() {
+  try {
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    const { data: unpaidReservations, error: fetchErr } = await supabase
+      .from('reservations')
+      .select(`
+        id,
+        event_date,
+        payment_status,
+        payments (
+          dp_due_date,
+          full_due_date
+        )
+      `)
+      .neq('payment_status', 'paid');
+
+    if (fetchErr || !unpaidReservations) return;
+
+    const idsToDelete = [];
+
+    for (const res of unpaidReservations) {
+      const eventDatePast = res.event_date && res.event_date < todayStr;
+
+      const paymentInfo = Array.isArray(res.payments) && res.payments.length > 0
+        ? res.payments[0]
+        : res.payments;
+
+      let dueDatePast = false;
+      if (paymentInfo) {
+        if (paymentInfo.dp_due_date && paymentInfo.dp_due_date < todayStr && res.payment_status === 'unpaid') {
+          dueDatePast = true;
+        }
+        if (paymentInfo.full_due_date && paymentInfo.full_due_date < todayStr) {
+          dueDatePast = true;
+        }
+      }
+
+      if (eventDatePast || dueDatePast) {
+        idsToDelete.push(res.id);
+      }
+    }
+
+    if (idsToDelete.length > 0) {
+      await supabase.from('event_workers').delete().in('reservation_id', idsToDelete);
+      await supabase.from('payments').delete().in('reservation_id', idsToDelete);
+      await supabase.from('reservations').delete().in('id', idsToDelete);
+      console.log('Auto-cleaned expired unpaid reservations:', idsToDelete);
+    }
+  } catch (err) {
+    console.error('Error in autoCleanupExpiredReservations:', err);
+  }
 }

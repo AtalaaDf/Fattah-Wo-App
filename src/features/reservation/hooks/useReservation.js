@@ -21,9 +21,14 @@ export function useReservation(reservationId = null) {
 
   const createMutation = useMutation({
     mutationFn: (formData) => createClientReservation(formData, user?.id),
-    onSuccess: () => {
+    onSuccess: (newReservationData) => {
+      if (newReservationData?.id) {
+        queryClient.setQueryData(['reservation', newReservationData.id], newReservationData);
+      }
       queryClient.invalidateQueries({ queryKey: ['clientReservations'] });
       queryClient.invalidateQueries({ queryKey: ['adminSchedule'] });
+      queryClient.invalidateQueries({ queryKey: ['availableEvents'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
       toast.success('Reservasi berhasil dibuat! Tim kami akan segera menghubungi Anda.');
     },
     onError: (err) => {

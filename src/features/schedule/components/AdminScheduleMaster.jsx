@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, List, MapPin, Phone, MessageSquare, UserPlus, UserX, Clock, Users, Tag, Image as ImageIcon, Eye, CheckCircle2, ShieldAlert, Search, Filter } from 'lucide-react';
+import { Calendar, List, MapPin, Phone, MessageSquare, UserPlus, UserX, Clock, Users, Tag, Image as ImageIcon, Eye, CheckCircle2, ShieldAlert, Search, Filter, Trash2 } from 'lucide-react';
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
 import StatusChip from '../../../components/ui/StatusChip';
@@ -13,8 +13,10 @@ export const AdminScheduleMaster = ({
   isLoading = false,
   onAssignWorker,
   onRemoveWorker,
+  onDeleteEvent,
   isAssigning,
   isRemoving,
+  isDeleting,
 }) => {
   const [viewMode, setViewMode] = useState('list');
   const [searchTerm, setSearchTerm] = useState('');
@@ -27,6 +29,8 @@ export const AdminScheduleMaster = ({
 
   const [selectedWorkerToRemove, setSelectedWorkerToRemove] = useState(null);
   const [removeReason, setRemoveReason] = useState('');
+
+  const [selectedEventToDelete, setSelectedEventToDelete] = useState(null);
 
   // Admin View Proof & Verification Modal
   const [selectedEventForProof, setSelectedEventForProof] = useState(null);
@@ -106,6 +110,13 @@ export const AdminScheduleMaster = ({
     setRemoveReason('');
   };
 
+  const handleDeleteSubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedEventToDelete || !onDeleteEvent) return;
+    await onDeleteEvent(selectedEventToDelete.id);
+    setSelectedEventToDelete(null);
+  };
+
   const handleAdminUpdatePaymentStatus = async (targetReservationId, newPaymentStatus) => {
     await adminUpdateStatus({
       targetReservationId,
@@ -165,9 +176,9 @@ export const AdminScheduleMaster = ({
             className="px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white"
           >
             <option value="all">Semua Status Bayar</option>
-            <option value="unpaid">🔴 Belum Bayar</option>
-            <option value="dp_paid">🟡 DP Paid</option>
-            <option value="paid">🟢 Lunas</option>
+            <option value="unpaid">Belum Bayar</option>
+            <option value="dp_paid">DP Paid</option>
+            <option value="paid">Lunas</option>
           </select>
 
           {/* Staffing Filter */}
@@ -177,8 +188,8 @@ export const AdminScheduleMaster = ({
             className="px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white"
           >
             <option value="all">Semua Kuota Kru</option>
-            <option value="needs_staff">⚠️ Butuh Tambahan Kru</option>
-            <option value="staff_full">✅ Kuota Kru Lengkap</option>
+            <option value="needs_staff">Butuh Tambahan Kru</option>
+            <option value="staff_full">Kuota Kru Lengkap</option>
           </select>
         </div>
 
@@ -235,9 +246,9 @@ export const AdminScheduleMaster = ({
                               : 'bg-rose-50 text-rose-700 border-rose-300'
                           }`}
                         >
-                          <option value="unpaid">🔴 Belum Bayar</option>
-                          <option value="dp_paid">🟡 Sudah Bayar DP</option>
-                          <option value="paid">🟢 Lunas</option>
+                          <option value="unpaid">Belum Bayar</option>
+                          <option value="dp_paid">Sudah Bayar DP</option>
+                          <option value="paid">Lunas</option>
                         </select>
                       </div>
                     </div>
@@ -274,6 +285,16 @@ export const AdminScheduleMaster = ({
                       <MessageSquare className="w-4 h-4 text-emerald-600" />
                       Chat WA Client
                     </a>
+
+                    <button
+                      type="button"
+                      onClick={() => setSelectedEventToDelete(event)}
+                      className="px-3 py-2 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shrink-0"
+                      title="Hapus Event"
+                    >
+                      <Trash2 className="w-4 h-4 text-rose-600" />
+                      Hapus Event
+                    </button>
                   </div>
                 </div>
 
@@ -322,7 +343,10 @@ export const AdminScheduleMaster = ({
                             key={ew.id}
                             className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-800"
                           >
-                            <span>⚠️ {profile.full_name || 'Worker'} (Ajukan Batal)</span>
+                            <span className="flex items-center gap-1">
+                              <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
+                              {profile.full_name || 'Worker'} (Ajukan Batal)
+                            </span>
                             <button
                               type="button"
                               onClick={() => onRemoveWorker({ eventWorkerId: ew.id, reason: 'Pengajuan pembatalan worker disetujui Admin' })}
@@ -436,7 +460,7 @@ export const AdminScheduleMaster = ({
                     : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
                 }`}
               >
-                🔴 Belum Bayar
+                Belum Bayar
               </button>
 
               <button
@@ -449,7 +473,7 @@ export const AdminScheduleMaster = ({
                     : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
                 }`}
               >
-                🟡 Bayar DP
+                Bayar DP
               </button>
 
               <button
@@ -462,7 +486,7 @@ export const AdminScheduleMaster = ({
                     : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
                 }`}
               >
-                🟢 Lunas
+                Lunas
               </button>
             </div>
           </div>
@@ -509,7 +533,7 @@ export const AdminScheduleMaster = ({
                     const isAvailable = details.is_available ?? true;
                     return (
                       <option key={w.id} value={w.id}>
-                        {w.full_name} (@{w.username}) — {isAvailable ? '🟢 Siap Kerja' : '🌙 Sedang Libur'}
+                        {w.full_name} (@{w.username}) — {isAvailable ? 'Siap Kerja' : 'Sedang Libur'}
                       </option>
                     );
                   });
@@ -569,6 +593,42 @@ export const AdminScheduleMaster = ({
             </Button>
             <Button type="submit" variant="ghost" className="text-rose-600 bg-rose-50 hover:bg-rose-100" isLoading={isRemoving}>
               Keluarkan Worker
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Delete Event Confirmation Modal */}
+      <Modal
+        isOpen={!!selectedEventToDelete}
+        onClose={() => setSelectedEventToDelete(null)}
+        title="Konfirmasi Hapus Event Reservasi"
+        maxWidth="max-w-md"
+      >
+        <form onSubmit={handleDeleteSubmit} className="space-y-4">
+          <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-800 space-y-1.5">
+            <p className="font-bold flex items-center gap-1.5 text-rose-900">
+              <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0" />
+              Peringatan Penghapusan Event Permanen
+            </p>
+            <p className="text-[11px] text-rose-700 leading-relaxed">
+              Jika pembayaran/pelunasan belum dilakukan hingga melewati tanggal tunda atau tanggal event, Admin berhak menghapus event ini secara permanen.
+            </p>
+          </div>
+
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs space-y-1">
+            <p className="text-slate-500">Klien: <strong className="text-slate-900">{selectedEventToDelete?.full_name}</strong></p>
+            <p className="text-slate-500">Ref Code: <span className="font-mono text-slate-700 font-bold">{selectedEventToDelete?.ref_code}</span></p>
+            <p className="text-slate-500">Tanggal Acara: <strong className="text-slate-900">{selectedEventToDelete?.event_date}</strong></p>
+            <p className="text-slate-500">Status Bayar: <span className="capitalize font-bold text-rose-600">{selectedEventToDelete?.payment_status}</span></p>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
+            <Button type="button" variant="outline" onClick={() => setSelectedEventToDelete(null)}>
+              Batal
+            </Button>
+            <Button type="submit" variant="danger" isLoading={isDeleting}>
+              Ya, Hapus Event Ini
             </Button>
           </div>
         </form>

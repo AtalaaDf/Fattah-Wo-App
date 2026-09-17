@@ -39,11 +39,16 @@ export const PostponePaymentModal = ({ isOpen, onClose, onConfirmPostpone, isSub
           required
         />
 
-        <div className="p-3 bg-amber-50 rounded-lg text-xs text-amber-800 flex items-start gap-2">
-          <Clock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-          <span>
-            Jadwal penundaan akan dicatat di sistem agar tim Admin Fattah WO dapat mengonfirmasi jadwal Anda.
-          </span>
+        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800 space-y-1">
+          <div className="flex items-start gap-2">
+            <Clock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            <span>
+              Jadwal penundaan akan dicatat di sistem agar tim Admin Fattah WO dapat mengonfirmasi jadwal Anda.
+            </span>
+          </div>
+          <p className="text-[11px] text-rose-700 font-semibold pt-1 border-t border-amber-200/60">
+            Perhatian: Jika pembayaran/pelunasan belum dilakukan hingga melewati tanggal tunda atau tanggal event, sistem akan menghapus event reservasi Anda secara otomatis
+          </p>
         </div>
 
         <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">

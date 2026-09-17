@@ -127,16 +127,19 @@ export const WorkerList = ({
 
                     {/* Single Unified Primary Status Badge */}
                     {!worker.is_active ? (
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
-                        🔴 Akun Nonaktif
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                        <UserX className="w-3 h-3 text-rose-600" />
+                        Akun Nonaktif
                       </span>
                     ) : isAvailable ? (
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        🟢 Siap Kerja
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <UserCheck className="w-3 h-3 text-emerald-600" />
+                        Siap Kerja
                       </span>
                     ) : (
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-                        🌙 Sedang Libur
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                        <Power className="w-3 h-3 text-amber-600" />
+                        Sedang Libur
                       </span>
                     )}
                   </div>

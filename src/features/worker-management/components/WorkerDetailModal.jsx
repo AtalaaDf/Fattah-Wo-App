@@ -50,7 +50,7 @@ export const WorkerDetailModal = ({
                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
                   : 'bg-amber-50 text-amber-800 border-amber-200'
               }`}>
-                Jadwal: {isAvailable ? '🟢 Siap Kerja' : '🌙 Sedang Libur'}
+                Jadwal: {isAvailable ? 'Siap Kerja' : 'Sedang Libur'}
               </span>
             </div>
             <div className="mt-1.5">
@@ -63,7 +63,7 @@ export const WorkerDetailModal = ({
 
         {/* Info Note for Admin Clarity */}
         <div className="p-3 rounded-lg bg-slate-100/80 border border-slate-200 text-xs text-slate-600 flex items-start gap-2">
-          <span className="shrink-0 text-base leading-none">💡</span>
+          <Clock className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
           <p>
             <strong className="text-slate-800">Status Akses</strong> dikontrol oleh Admin (izin login), sedangkan <strong className="text-slate-800">Status Jadwal</strong> diatur mandiri oleh Worker (siap kerja / libur).
           </p>

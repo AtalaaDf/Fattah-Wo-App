@@ -67,7 +67,7 @@ export async function getClientReservations(clientId) {
         worker_id,
         role_needed,
         status,
-        profiles (id, full_name, avatar_url, phone, worker_details (*))
+        profiles!worker_id (id, full_name, avatar_url, phone)
       )
     `)
     .eq('client_id', clientId)
@@ -92,7 +92,7 @@ export async function getReservationById(reservationId) {
         worker_id,
         role_needed,
         status,
-        profiles (id, full_name, avatar_url, phone, worker_details (*))
+        profiles!worker_id (id, full_name, avatar_url, phone)
       )
     `)
     .eq('id', reservationId)

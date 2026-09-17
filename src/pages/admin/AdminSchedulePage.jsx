@@ -5,7 +5,16 @@ import AdminScheduleMaster from '../../features/schedule/components/AdminSchedul
 import { Calendar } from 'lucide-react';
 
 export const AdminSchedulePage = () => {
-  const { adminEvents, isAdminLoading, assignWorker, removeWorker, isAssigning, isRemoving } = useSchedule();
+  const {
+    adminEvents,
+    isAdminLoading,
+    assignWorker,
+    removeWorker,
+    deleteEvent,
+    isAssigning,
+    isRemoving,
+    isDeleting,
+  } = useSchedule();
   const { workers } = useWorkerManagement();
 
   return (
@@ -27,8 +36,10 @@ export const AdminSchedulePage = () => {
         isLoading={isAdminLoading}
         onAssignWorker={assignWorker}
         onRemoveWorker={removeWorker}
+        onDeleteEvent={deleteEvent}
         isAssigning={isAssigning}
         isRemoving={isRemoving}
+        isDeleting={isDeleting}
       />
     </div>
   );
