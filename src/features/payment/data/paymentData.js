@@ -4,6 +4,7 @@ export const PAYMENT_METHODS = [
   {
     id: 'bca',
     name: 'Bank BCA',
+    methodEnum: 'bank_transfer',
     accountName: 'Fattah Wedding Organizer',
     accountNumber: '8835-1289-90',
     type: 'bank',
@@ -15,6 +16,7 @@ export const PAYMENT_METHODS = [
   {
     id: 'mandiri',
     name: 'Bank Mandiri',
+    methodEnum: 'bank_transfer',
     accountName: 'Fattah Wedding Organizer',
     accountNumber: '113-00-19283-771',
     type: 'bank',
@@ -26,6 +28,7 @@ export const PAYMENT_METHODS = [
   {
     id: 'bri',
     name: 'Bank BRI',
+    methodEnum: 'bank_transfer',
     accountName: 'Fattah Wedding Organizer',
     accountNumber: '0051-01-08293-500',
     type: 'bank',
@@ -35,11 +38,12 @@ export const PAYMENT_METHODS = [
     icon: Landmark,
   },
   {
-    id: 'qris',
-    name: 'QRIS & E-Wallet',
+    id: 'e_wallet',
+    name: 'E-Wallet',
+    methodEnum: 'e_wallet',
     accountName: 'Fattah WO (GoPay/OVO/Dana)',
     accountNumber: '0812-3456-7890',
-    type: 'qris',
+    type: 'e_wallet',
     badge: 'Instant QR Code / E-Wallet',
     color: 'border-purple-200 bg-purple-50/50 hover:bg-purple-50',
     activeColor: 'border-purple-600 bg-purple-50 ring-2 ring-purple-500/20 text-purple-950',

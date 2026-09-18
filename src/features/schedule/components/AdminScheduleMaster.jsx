@@ -38,17 +38,25 @@ export const AdminScheduleMaster = ({
   const [isLoadingProof, setIsLoadingProof] = useState(false);
   const { adminUpdateStatus, isAdminUpdating } = usePayment(selectedEventForProof?.id);
 
+  const getPayment = (event) => {
+    if (!event?.payments) return null;
+    return Array.isArray(event.payments) ? (event.payments[0] ?? null) : event.payments;
+  };
+
   useEffect(() => {
     async function fetchProofUrl() {
-      if (selectedEventForProof?.payments?.proof_url) {
-        if (selectedEventForProof.payments.proof_url.startsWith('http')) {
-          setProofSignedUrl(selectedEventForProof.payments.proof_url);
+      const payment = getPayment(selectedEventForProof);
+      const proofUrl = payment?.proof_url;
+
+      if (proofUrl) {
+        if (proofUrl.startsWith('http')) {
+          setProofSignedUrl(proofUrl);
           return;
         }
 
         setIsLoadingProof(true);
         try {
-          const signedUrl = await getPaymentProofSignedUrl(selectedEventForProof.payments.proof_url);
+          const signedUrl = await getPaymentProofSignedUrl(proofUrl);
           setProofSignedUrl(signedUrl);
         } catch (error) {
           console.error('Error fetching signed URL:', error);

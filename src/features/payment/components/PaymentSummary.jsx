@@ -76,7 +76,7 @@ export const PaymentSummary = ({ reservation, payment, onSubmitProof, onPostpone
       const proofUrl = await uploadPaymentProof(reservation.id, selectedFile);
       await onSubmitProof({
         proofUrl,
-        method: currentMethodObj.name,
+        method: currentMethodObj.methodEnum,
         paymentType,
       });
       setUploadSuccess(true);

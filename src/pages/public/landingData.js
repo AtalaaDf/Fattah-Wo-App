@@ -1,15 +1,10 @@
-/**
- * landingData.js
- * Data statis untuk halaman Landing Page — features, stats, dan FAQs.
- * Dipisah agar LandingPage.jsx tetap bersih dan fokus pada layout/render.
- */
 
 import {
   Calendar, ShieldCheck, Heart,
   Star, Users, CheckCircle2, Clock,
 } from 'lucide-react';
 
-// ─── Feature Highlights ────────────────────────────────────────────────────
+//Feature Highlights
 export const LANDING_FEATURES = [
   {
     icon: Calendar,
@@ -31,7 +26,7 @@ export const LANDING_FEATURES = [
   },
 ];
 
-// ─── Stats Strip ───────────────────────────────────────────────────────────
+//Stats Strip
 export const LANDING_STATS = [
   { icon: Star,         value: '4.9/5',   label: 'Rating Kepuasan' },
   { icon: Users,        value: '200+',    label: 'Klien Puas' },
@@ -39,7 +34,7 @@ export const LANDING_STATS = [
   { icon: Clock,        value: '5 Tahun', label: 'Pengalaman' },
 ];
 
-// ─── FAQ Items ─────────────────────────────────────────────────────────────
+// FAQ Items
 export const LANDING_FAQS = [
   {
     q: 'Bagaimana cara memilih paket wedding di Fattah Wedding Organizer?',
