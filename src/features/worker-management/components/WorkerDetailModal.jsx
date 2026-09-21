@@ -138,24 +138,15 @@ export const WorkerDetailModal = ({
               <Button
                 variant={worker.is_active ? 'ghost' : 'secondary'}
                 size="sm"
-                className={`text-xs ${worker.is_active ? 'text-amber-700 bg-amber-50 hover:bg-amber-100' : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'}`}
+                leftIcon={worker.is_active ? <UserX className="w-3.5 h-3.5" /> : <UserCheck className="w-3.5 h-3.5" />}
+                className={`text-xs flex-row whitespace-nowrap ${worker.is_active ? 'text-amber-700 bg-amber-50 hover:bg-amber-100' : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'}`}
                 disabled={isToggling}
                 onClick={() => {
                   onToggleStatus(worker.id, !worker.is_active);
                   onClose();
                 }}
               >
-                {worker.is_active ? (
-                  <>
-                    <UserX className="w-3.5 h-3.5 mr-1" />
-                    Bekukan Akun
-                  </>
-                ) : (
-                  <>
-                    <UserCheck className="w-3.5 h-3.5 mr-1" />
-                    Aktifkan Akun
-                  </>
-                )}
+                {worker.is_active ? 'Bekukan Akun' : 'Aktifkan Akun'}
               </Button>
             )}
 
@@ -163,7 +154,8 @@ export const WorkerDetailModal = ({
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                leftIcon={<Trash2 className="w-3.5 h-3.5" />}
+                className="text-xs flex-row whitespace-nowrap text-rose-600 hover:bg-rose-50 hover:text-rose-700"
                 disabled={isDeleting}
                 onClick={() => {
                   if (window.confirm(`Apakah Anda yakin ingin menghapus akun worker "${worker.full_name}" secara permanen?`)) {
@@ -172,13 +164,17 @@ export const WorkerDetailModal = ({
                   }
                 }}
               >
-                <Trash2 className="w-3.5 h-3.5 mr-1" />
                 Hapus Worker
               </Button>
             )}
           </div>
 
-          <Button variant="outline" size="sm" onClick={onClose}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onClose}
+            className="flex-row whitespace-nowrap"
+          >
             Tutup
           </Button>
         </div>

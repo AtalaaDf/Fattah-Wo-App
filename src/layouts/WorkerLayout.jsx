@@ -5,6 +5,7 @@ import Logo from '../components/common/Logo';
 import Footer from '../components/common/Footer';
 import Sidebar from '../components/common/Sidebar';
 import { useAuthStore } from '../store/useAuthStore';
+import { useLogoutMutation } from '../features/auth/hooks/useAuthHooks';
 
 const navItems = [
   { label: 'Dashboard', path: '/worker/dashboard', icon: LayoutDashboard },
@@ -15,13 +16,12 @@ const navItems = [
 
 export const WorkerLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
   const profile = useAuthStore((state) => state.profile);
+  const logoutMutation = useLogoutMutation();
 
   const handleLogout = () => {
-    logout();
-    window.location.href = '/login';
+    logoutMutation.mutate();
   };
 
   return (

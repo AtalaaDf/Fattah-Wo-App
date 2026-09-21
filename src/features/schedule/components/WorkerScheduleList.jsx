@@ -78,7 +78,8 @@ export const WorkerScheduleList = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-xs text-rose-600 hover:bg-rose-50 border border-rose-200 shrink-0"
+                      leftIcon={<AlertCircle className="w-3.5 h-3.5" />}
+                      className="text-xs text-rose-600 hover:bg-rose-50 border border-rose-200 shrink-0 flex-row whitespace-nowrap"
                       disabled={isRequestingCancel}
                       onClick={() => {
                         if (
@@ -90,7 +91,6 @@ export const WorkerScheduleList = ({
                         }
                       }}
                     >
-                      <AlertCircle className="w-3.5 h-3.5 mr-1" />
                       Ajukan Pembatalan ke Admin
                     </Button>
                   )}

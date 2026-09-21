@@ -91,11 +91,11 @@ export const BundleCarousel = ({ bundles = [], onSelectBundle, showSelectButton 
                 <div className="mt-6 pt-3 border-t border-slate-100">
                   <Button
                     onClick={() => onSelectBundle(bundle)}
-                    className="w-full"
+                    rightIcon={<ArrowRight className="w-4 h-4" />}
+                    className="w-full flex-row whitespace-nowrap"
                     variant={bundle.is_popular ? 'primary' : 'outline'}
                   >
                     Pilih Paket Ini
-                    <ArrowRight className="w-4 h-4 ml-1.5" />
                   </Button>
                 </div>
               )}

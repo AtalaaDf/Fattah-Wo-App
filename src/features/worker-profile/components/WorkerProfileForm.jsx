@@ -290,8 +290,13 @@ export const WorkerProfileForm = ({ details = {}, onSave, isSaving }) => {
 
       {/* Submit Button */}
       <div className="flex justify-end pt-2">
-        <Button type="submit" size="lg" isLoading={isSaving || isUploading}>
-          <Save className="w-4 h-4 mr-2" />
+        <Button
+          type="submit"
+          size="lg"
+          isLoading={isSaving || isUploading}
+          leftIcon={<Save className="w-4 h-4" />}
+          className="flex-row whitespace-nowrap"
+        >
           {isUploading ? 'Mengunggah...' : 'Simpan Perubahan Biodata & Status'}
         </Button>
       </div>

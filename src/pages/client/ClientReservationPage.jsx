@@ -24,9 +24,9 @@ export const ClientReservationPage = () => {
 
         <Button
           onClick={() => navigate('/client/reservation/new')}
-          className="shadow-sm font-semibold flex items-center gap-1.5 shrink-0"
+          leftIcon={<Plus className="w-4 h-4" />}
+          className="shadow-sm font-semibold flex-row gap-1.5 shrink-0 whitespace-nowrap"
         >
-          <Plus className="w-4 h-4" />
           Buat Reservasi Baru
         </Button>
       </div>

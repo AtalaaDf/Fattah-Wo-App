@@ -74,8 +74,11 @@ export const WorkerList = ({
           </select>
         </div>
 
-        <Button onClick={onOpenAddModal} className="w-full sm:w-auto shrink-0">
-          <UserPlus className="w-4 h-4 mr-2" />
+        <Button
+          onClick={onOpenAddModal}
+          leftIcon={<UserPlus className="w-4 h-4" />}
+          className="w-full sm:w-auto shrink-0 flex-row whitespace-nowrap"
+        >
           Tambah Worker Baru
         </Button>
       </div>
@@ -171,31 +174,22 @@ export const WorkerList = ({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1 text-xs px-2"
+                    leftIcon={<Eye className="w-3.5 h-3.5" />}
+                    className="flex-1 text-xs px-2 flex-row whitespace-nowrap"
                     onClick={() => onOpenDetailModal(worker)}
                   >
-                    <Eye className="w-3.5 h-3.5 mr-1" />
                     Detail
                   </Button>
 
                   <Button
                     variant={worker.is_active ? 'ghost' : 'secondary'}
                     size="sm"
-                    className={`text-xs px-2.5 ${worker.is_active ? 'text-amber-700 bg-amber-50 hover:bg-amber-100' : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'}`}
+                    leftIcon={worker.is_active ? <UserX className="w-3.5 h-3.5" /> : <UserCheck className="w-3.5 h-3.5" />}
+                    className={`text-xs px-2.5 flex-row whitespace-nowrap ${worker.is_active ? 'text-amber-700 bg-amber-50 hover:bg-amber-100' : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'}`}
                     disabled={isToggling}
                     onClick={() => onToggleStatus(worker.id, !worker.is_active)}
                   >
-                    {worker.is_active ? (
-                      <>
-                        <UserX className="w-3.5 h-3.5 mr-1" />
-                        Bekukan
-                      </>
-                    ) : (
-                      <>
-                        <UserCheck className="w-3.5 h-3.5 mr-1" />
-                        Aktifkan
-                      </>
-                    )}
+                    {worker.is_active ? 'Bekukan' : 'Aktifkan'}
                   </Button>
 
                   {onDeleteWorker && (

@@ -72,11 +72,11 @@ export const ClientReservationList = ({ reservations = [], isLoading = false }) 
               <Button
                 onClick={() => navigate(`/client/payment/${item.id}`)}
                 size="sm"
-                className="w-full sm:w-auto text-xs"
+                leftIcon={<CreditCard className="w-3.5 h-3.5" />}
+                rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
+                className="w-full sm:w-auto text-xs flex-row whitespace-nowrap"
               >
-                <CreditCard className="w-3.5 h-3.5 mr-1.5" />
                 {item.payment_status === 'paid' ? 'Lihat Detail Pembayaran' : 'Proses Pembayaran'}
-                <ArrowRight className="w-3.5 h-3.5 ml-1" />
               </Button>
             </div>
           </Card>

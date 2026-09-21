@@ -1,15 +1,17 @@
 import React, { useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
 import StatusChip from '../../../components/ui/StatusChip';
 import { Calendar, Clock, Upload, CheckCircle2, AlertCircle, FileImage, X, Copy, Check } from 'lucide-react';
 import PostponePaymentModal from './PostponePaymentModal';
+import Modal from '../../../components/ui/Modal';
 import { uploadPaymentProof } from '../../../lib/supabase/storage';
 import { toast } from 'sonner';
 import { PAYMENT_METHODS } from '../data/paymentData';
 
 export const PaymentSummary = ({ reservation, payment, onSubmitProof, onPostpone, isSubmittingProof, isPostponing }) => {
+  const navigate = useNavigate();
   const [paymentType, setPaymentType] = useState('full'); // 'dp' | 'full'
   const [selectedMethodId, setSelectedMethodId] = useState('bca');
   const [copiedAccount, setCopiedAccount] = useState(false);
@@ -19,7 +21,7 @@ export const PaymentSummary = ({ reservation, payment, onSubmitProof, onPostpone
   const fileInputRef = useRef(null);
 
   const [isPostponeModalOpen, setIsPostponeModalOpen] = useState(false);
-  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [isUploadConfirmationOpen, setIsUploadConfirmationOpen] = useState(false);
 
   if (!reservation) {
     return (
@@ -44,8 +46,6 @@ export const PaymentSummary = ({ reservation, payment, onSubmitProof, onPostpone
   const displayAmount = adminVerifiedAmount || estimatedAmount;
 
   const currentStatus = reservation.payment_status || 'unpaid';
-  const hasUploadedProof = !!payment?.proof_url || uploadSuccess;
-
   const currentMethodObj = PAYMENT_METHODS.find((m) => m.id === selectedMethodId) || PAYMENT_METHODS[0];
 
   const handleCopyAccount = (number) => {
@@ -79,7 +79,9 @@ export const PaymentSummary = ({ reservation, payment, onSubmitProof, onPostpone
         method: currentMethodObj.methodEnum,
         paymentType,
       });
-      setUploadSuccess(true);
+      setSelectedFile(null);
+      setFilePreview(null);
+      setIsUploadConfirmationOpen(true);
     } finally {
       setIsUploading(false);
     }
@@ -289,29 +291,25 @@ export const PaymentSummary = ({ reservation, payment, onSubmitProof, onPostpone
               )}
             </div>
 
-            {hasUploadedProof && (
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-                <span>
-                  Bukti foto pembayaran Anda sudah terkirim! Admin akan memeriksa struk Anda dan mengonfirmasi status menjadi <strong>Sudah Bayar DP (Kuning)</strong> atau <strong>Lunas (Hijau)</strong>.
-                </span>
-              </div>
-            )}
-
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 pt-3 border-t border-slate-100">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setIsPostponeModalOpen(true)}
-                className="flex-1"
+                leftIcon={<Calendar className="w-4 h-4 text-slate-500" />}
+                className="flex-1 whitespace-nowrap"
               >
-                <Calendar className="w-4 h-4 mr-2 text-slate-500" />
                 Tunda Payment
               </Button>
 
-              <Button type="submit" isLoading={isSubmittingProof || isUploading} disabled={!selectedFile} className="flex-1">
-                <Upload className="w-4 h-4 mr-2" />
+              <Button
+                type="submit"
+                isLoading={isSubmittingProof || isUploading}
+                disabled={!selectedFile}
+                leftIcon={<Upload className="w-4 h-4" />}
+                className="flex-1 whitespace-nowrap"
+              >
                 {isUploading ? 'Mengunggah...' : 'Kirim Bukti Foto Pembayaran'}
               </Button>
             </div>
@@ -349,6 +347,31 @@ export const PaymentSummary = ({ reservation, payment, onSubmitProof, onPostpone
         }}
         isSubmitting={isPostponing}
       />
+
+      <Modal
+        isOpen={isUploadConfirmationOpen}
+        onClose={() => navigate('/client/reservation')}
+        title="Bukti Pembayaran Terkirim"
+        maxWidth="max-w-md"
+      >
+        <div className="space-y-4 text-center">
+          <CheckCircle2 className="w-12 h-12 mx-auto text-emerald-600" />
+          <div>
+            <p className="font-bold text-slate-900">Bukti pembayaran berhasil dikirim.</p>
+            <p className="text-sm text-slate-500 mt-1">
+              Admin akan memeriksa bukti transfer dan memperbarui status pembayaran Anda.
+            </p>
+          </div>
+          <Button
+            type="button"
+            onClick={() => navigate('/client/reservation')}
+            leftIcon={<CheckCircle2 className="w-4 h-4" />}
+            className="w-full"
+          >
+            Kembali ke Reservasi Saya
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 };

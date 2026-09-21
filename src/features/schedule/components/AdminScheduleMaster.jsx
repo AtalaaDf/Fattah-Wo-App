@@ -372,10 +372,10 @@ export const AdminScheduleMaster = ({
                   <Button
                     size="sm"
                     variant="outline"
+                    leftIcon={<UserPlus className="w-3.5 h-3.5" />}
                     onClick={() => handleOpenAssignModal(event)}
-                    className="text-xs shrink-0"
+                    className="text-xs shrink-0 flex-row whitespace-nowrap"
                   >
-                    <UserPlus className="w-3.5 h-3.5 mr-1.5" />
                     Assign Staf Manual
                   </Button>
                 </div>

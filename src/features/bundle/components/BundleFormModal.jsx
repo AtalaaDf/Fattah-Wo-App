@@ -285,8 +285,14 @@ export const BundleFormModal = ({ isOpen, onClose, onSave, bundleToEdit, isSubmi
               {newFeatureIncluded ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
               {newFeatureIncluded ? 'Termasuk' : 'Tidak'}
             </button>
-            <Button type="button" size="sm" variant="outline" onClick={handleAddFeature}>
-              <Plus className="w-3.5 h-3.5 mr-1" />
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={handleAddFeature}
+              leftIcon={<Plus className="w-3.5 h-3.5" />}
+              className="flex-row whitespace-nowrap"
+            >
               Tambah
             </Button>
           </div>

@@ -44,8 +44,11 @@ export const AdminBundleList = ({
           ))}
         </div>
 
-        <Button onClick={onOpenCreateModal} className="w-full sm:w-auto">
-          <Plus className="w-4 h-4 mr-2" />
+        <Button
+          onClick={onOpenCreateModal}
+          leftIcon={<Plus className="w-4 h-4" />}
+          className="w-full sm:w-auto flex-row whitespace-nowrap"
+        >
           Tambah Bundle Paket Baru
         </Button>
       </div>
@@ -146,10 +149,10 @@ export const AdminBundleList = ({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1 text-xs"
+                    leftIcon={<Edit2 className="w-3.5 h-3.5" />}
+                    className="flex-1 text-xs flex-row whitespace-nowrap"
                     onClick={() => onOpenEditModal(bundle)}
                   >
-                    <Edit2 className="w-3.5 h-3.5 mr-1.5" />
                     Edit Bundle
                   </Button>
                   <Button

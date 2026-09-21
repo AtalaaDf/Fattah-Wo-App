@@ -25,7 +25,6 @@ export function usePayment(reservationId) {
       queryClient.invalidateQueries({ queryKey: ['reservation', reservationId] });
       queryClient.invalidateQueries({ queryKey: ['clientReservations'] });
       queryClient.invalidateQueries({ queryKey: ['adminSchedule'] });
-      toast.success('Bukti pembayaran berhasil dikirim. Tim kami akan segera memverifikasi.');
     },
     onError: (err) => {
       toast.error(err.message || 'Gagal mengirim bukti pembayaran.');
