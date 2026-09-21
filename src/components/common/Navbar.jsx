@@ -4,12 +4,6 @@ import Logo from './Logo';
 import Button from '../ui/Button';
 import { LogIn, UserPlus, Menu, X } from 'lucide-react';
 
-/**
- * Navbar — Public navigation untuk landing page dan halaman auth.
- * - Di landing page: anchor link scroll halus ke section (#home, #about, dll)
- * - Di halaman lain (login/register): klik nav item akan navigate ke / lalu scroll
- * - Responsive: hamburger menu di mobile
- */
 export const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -39,16 +33,12 @@ export const Navbar = () => {
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     } else {
-      // Di halaman lain — navigate ke landing, lalu scroll setelah render
       navigate(`/#${sectionId}`);
     }
   };
-
-  // Handle hash scroll setelah navigate dari halaman lain
   useEffect(() => {
     if (location.hash) {
       const sectionId = location.hash.replace('#', '');
-      // Delay singkat agar DOM siap
       const timer = setTimeout(() => {
         const el = document.getElementById(sectionId);
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -96,15 +86,22 @@ export const Navbar = () => {
 
           {/* Desktop Action Buttons */}
           <div className="hidden md:flex items-center gap-3">
-            <Link to="/login">
-              <Button variant="outline" size="sm" className="text-xs">
-                <LogIn className="w-3.5 h-3.5 mr-1.5" />
+            <Link to="/login" className="flex">
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<LogIn className="w-3.5 h-3.5" />}
+                className="flex flex-row items-center whitespace-nowrap text-xs"
+              >
                 Masuk
               </Button>
             </Link>
-            <Link to="/register">
-              <Button size="sm" className="text-xs">
-                <UserPlus className="w-3.5 h-3.5 mr-1.5" />
+            <Link to="/register" className="flex">
+              <Button
+                size="sm"
+                leftIcon={<UserPlus className="w-3.5 h-3.5" />}
+                className="flex flex-row items-center whitespace-nowrap text-xs"
+              >
                 Daftar Reservasi
               </Button>
             </Link>
@@ -134,14 +131,21 @@ export const Navbar = () => {
             ))}
             <div className="pt-2 border-t border-slate-100 flex flex-col gap-2">
               <Link to="/login" onClick={() => setIsMobileOpen(false)}>
-                <Button variant="outline" size="sm" className="w-full text-xs justify-center">
-                  <LogIn className="w-3.5 h-3.5 mr-1.5" />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<LogIn className="w-3.5 h-3.5" />}
+                  className="w-full flex-row text-xs justify-center"
+                >
                   Masuk
                 </Button>
               </Link>
               <Link to="/register" onClick={() => setIsMobileOpen(false)}>
-                <Button size="sm" className="w-full text-xs justify-center">
-                  <UserPlus className="w-3.5 h-3.5 mr-1.5" />
+                <Button
+                  size="sm"
+                  leftIcon={<UserPlus className="w-3.5 h-3.5" />}
+                  className="w-full flex-row text-xs justify-center"
+                >
                   Daftar Reservasi
                 </Button>
               </Link>
