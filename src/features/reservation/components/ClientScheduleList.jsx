@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, MapPin, UserCircle, Star, MessageCircle, AlertCircle } from 'lucide-react';
+import { Calendar, MapPin, UserCircle, MessageCircle, AlertCircle } from 'lucide-react';
 import Card from '../../../components/ui/Card';
 import StatusChip from '../../../components/ui/StatusChip';
 import FeedbackForm from '../../feedback/components/FeedbackForm';

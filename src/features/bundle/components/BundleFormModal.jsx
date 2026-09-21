@@ -6,7 +6,7 @@ import Modal from '../../../components/ui/Modal';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
 import Button from '../../../components/ui/Button';
-import { Layers, Plus, Trash2, Tag, Check, X, Image as ImageIcon, FileImage } from 'lucide-react';
+import { Layers, Plus, Trash2, Tag, Check, X, FileImage } from 'lucide-react';
 import { uploadBundleImage } from '../../../lib/supabase/storage';
 
 export const BundleFormModal = ({ isOpen, onClose, onSave, bundleToEdit, isSubmitting }) => {
@@ -16,14 +16,12 @@ export const BundleFormModal = ({ isOpen, onClose, onSave, bundleToEdit, isSubmi
 
   const [selectedFile, setSelectedFile] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef(null);
 
   const {
     register,
     handleSubmit,
     reset,
-    setValue,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(bundleSchema),
@@ -100,17 +98,9 @@ export const BundleFormModal = ({ isOpen, onClose, onSave, bundleToEdit, isSubmi
   };
 
   const onSubmit = async (data) => {
-    let finalImageUrl = data.image_url;
-
     if (selectedFile) {
-      setIsUploadingImage(true);
-      try {
-        const bundleFolder = bundleToEdit?.id || `bundle_${Date.now()}`;
-        finalImageUrl = await uploadBundleImage(bundleFolder, selectedFile);
-        data.image_url = finalImageUrl;
-      } finally {
-        setIsUploadingImage(false);
-      }
+      const bundleFolder = bundleToEdit?.id || `bundle_${Date.now()}`;
+      data.image_url = await uploadBundleImage(bundleFolder, selectedFile);
     }
 
     await onSave({ bundleData: data, features, bundleId: bundleToEdit?.id });

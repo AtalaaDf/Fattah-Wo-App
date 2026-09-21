@@ -8,7 +8,7 @@ import logoImg from '../../assets/logo/logo.png'
  * @param {'light' | 'dark'} [props.theme='dark'] - Color theme context
  * @param {string} [props.className] - Additional CSS classes
  */
-export const Logo = ({ variant = 'full', theme = 'dark', className = '' }) => {
+export const Logo = ({ variant = 'full', className = '' }) => {
   const sizeClasses = variant === 'icon' ? 'h-9 w-auto max-w-[120px]' : 'h-12 w-auto max-w-[220px]'
 
   return (

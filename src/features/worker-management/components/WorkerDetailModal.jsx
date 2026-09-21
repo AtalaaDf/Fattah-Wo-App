@@ -1,6 +1,5 @@
 import React from 'react';
 import Modal from '../../../components/ui/Modal';
-import StatusChip from '../../../components/ui/StatusChip';
 import Button from '../../../components/ui/Button';
 import { User, Phone, Mail, Calendar, MapPin, GraduationCap, Clock, UserX, UserCheck, Trash2 } from 'lucide-react';
 

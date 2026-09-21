@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, MessageSquare, User } from 'lucide-react';
+import { Star, MessageSquare } from 'lucide-react';
 import Card from '../../../components/ui/Card';
 
 export const FeedbackList = ({ feedbacks = [], isLoading = false }) => {

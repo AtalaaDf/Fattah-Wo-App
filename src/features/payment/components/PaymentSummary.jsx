@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
 import StatusChip from '../../../components/ui/StatusChip';
-import { Landmark, Calendar, Clock, Upload, CheckCircle2, AlertCircle, FileImage, X, Copy, Check } from 'lucide-react';
+import { Calendar, Clock, Upload, CheckCircle2, AlertCircle, FileImage, X, Copy, Check } from 'lucide-react';
 import PostponePaymentModal from './PostponePaymentModal';
 import { uploadPaymentProof } from '../../../lib/supabase/storage';
 import { toast } from 'sonner';

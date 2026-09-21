@@ -1,6 +1,5 @@
 import React from 'react';
 import { UserCheck, UserX, Eye, UserPlus, Search, Power, Trash2 } from 'lucide-react';
-import StatusChip from '../../../components/ui/StatusChip';
 import Button from '../../../components/ui/Button';
 import Card from '../../../components/ui/Card';
 import { SkeletonCard } from '../../../components/ui/Skeleton';

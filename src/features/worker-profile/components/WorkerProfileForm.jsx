@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { workerProfileSchema } from '../schemas/profileSchema';
 import Card from '../../../components/ui/Card';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
 import Button from '../../../components/ui/Button';
-import { User, Calendar, MapPin, GraduationCap, Phone, Mail, Image as ImageIcon, Save, CheckCircle, AlertCircle, Power, FileImage, X } from 'lucide-react';
+import { User, Calendar, MapPin, GraduationCap, Phone, Mail, Save, CheckCircle, AlertCircle, Power, FileImage } from 'lucide-react';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { uploadAvatar } from '../../../lib/supabase/storage';
 
@@ -18,7 +18,7 @@ export const WorkerProfileForm = ({ details = {}, onSave, isSaving }) => {
     register,
     handleSubmit,
     reset,
-    watch,
+    control,
     setValue,
     formState: { errors },
   } = useForm({
@@ -41,7 +41,7 @@ export const WorkerProfileForm = ({ details = {}, onSave, isSaving }) => {
   const fileInputRef = React.useRef(null);
   const [isUploading, setIsUploading] = React.useState(false);
 
-  const isAvailable = watch('is_available');
+  const isAvailable = useWatch({ control, name: 'is_available' });
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
