@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, List, MapPin, MessageSquare, UserPlus, UserX, Users, Tag, Image as ImageIcon, ShieldAlert, AlertTriangle, Search, Trash2 } from 'lucide-react';
+import { Calendar, MapPin, MessageSquare, UserPlus, UserX, Users, Tag, Image as ImageIcon, ShieldAlert, AlertTriangle, Search, Trash2 } from 'lucide-react';
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
 import StatusChip from '../../../components/ui/StatusChip';
@@ -18,7 +18,6 @@ export const AdminScheduleMaster = ({
   isRemoving,
   isDeleting,
 }) => {
-  const [viewMode, setViewMode] = useState('list');
   const [searchTerm, setSearchTerm] = useState('');
   const [paymentFilter, setPaymentFilter] = useState('all');
   const [staffFilter, setStaffFilter] = useState('all');
@@ -26,6 +25,7 @@ export const AdminScheduleMaster = ({
   const [selectedEventForAssign, setSelectedEventForAssign] = useState(null);
   const [selectedWorkerId, setSelectedWorkerId] = useState('');
   const [selectedRoleNeeded, setSelectedRoleNeeded] = useState('');
+  const [assignError, setAssignError] = useState('');
 
   const [selectedWorkerToRemove, setSelectedWorkerToRemove] = useState(null);
   const [removeReason, setRemoveReason] = useState('');
@@ -94,17 +94,31 @@ export const AdminScheduleMaster = ({
     setSelectedEventForAssign(event);
     setSelectedWorkerId('');
     setSelectedRoleNeeded('');
+    setAssignError('');
   };
 
   const handleAssignSubmit = async (e) => {
     e.preventDefault();
     if (!selectedWorkerId) return;
-    await onAssignWorker({
-      reservationId: selectedEventForAssign.id,
-      workerId: selectedWorkerId,
-      roleNeeded: selectedRoleNeeded || 'Kru Acara',
-    });
-    setSelectedEventForAssign(null);
+    try {
+      await onAssignWorker({
+        reservationId: selectedEventForAssign.id,
+        workerId: selectedWorkerId,
+        roleNeeded: selectedRoleNeeded || 'Kru Acara',
+      });
+      setSelectedEventForAssign(null);
+    } catch (error) {
+      const message = error?.message || '';
+      if (message.includes('schedule_conflict')) {
+        setAssignError('Worker tersebut sudah memiliki pekerjaan pada tanggal acara ini. Pilih worker lain atau tanggal event yang berbeda.');
+      } else if (message.includes('event_full')) {
+        setAssignError('Kuota worker untuk event ini sudah penuh.');
+      } else if (message.includes('worker_inactive')) {
+        setAssignError('Worker tersebut sedang dibekukan dan tidak dapat ditugaskan.');
+      } else {
+        setAssignError(message || 'Worker gagal ditugaskan. Silakan coba lagi.');
+      }
+    }
   };
 
   const handleRemoveSubmit = async (e) => {
@@ -139,32 +153,6 @@ export const AdminScheduleMaster = ({
       {/* View Toggle & Filter Controls Bar */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto flex-1">
-          {/* View Toggle */}
-          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg shrink-0">
-            <button
-              onClick={() => setViewMode('list')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-md flex items-center gap-1.5 transition-colors ${
-                viewMode === 'list'
-                  ? 'bg-white text-slate-900 shadow-xs font-bold'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <List className="w-3.5 h-3.5" />
-              List
-            </button>
-            <button
-              onClick={() => setViewMode('calendar')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-md flex items-center gap-1.5 transition-colors ${
-                viewMode === 'calendar'
-                  ? 'bg-white text-slate-900 shadow-xs font-bold'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Calendar className="w-3.5 h-3.5" />
-              Kalender
-            </button>
-          </div>
-
           {/* Search Bar */}
           <div className="relative flex-1 max-w-sm">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -222,8 +210,7 @@ export const AdminScheduleMaster = ({
               : 'Reservasi acara yang masuk dari client akan muncul di halaman ini.'}
           </p>
         </Card>
-      ) : viewMode === 'list' ? (
-        /* List View */
+      ) : (
         <div className="space-y-4">
           {filteredEvents.map((event) => {
             const activeWorkers = (event.event_workers || []).filter((ew) => ew.status === 'assigned');
@@ -263,6 +250,15 @@ export const AdminScheduleMaster = ({
 
                     <h3 className="text-lg font-bold text-slate-900">{event.full_name}</h3>
                     <p className="text-xs text-slate-500 flex items-center gap-3">
+                      <span className="flex items-center gap-1 font-semibold text-slate-700">
+                        <Calendar className="w-3.5 h-3.5 text-primary" />
+                        {new Date(event.event_date).toLocaleDateString('id-ID', {
+                          weekday: 'long',
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        })}
+                      </span>
                       <span className="flex items-center gap-1">
                         <Tag className="w-3.5 h-3.5 text-slate-400" />
                         {event.reservation_type} {event.bundles?.name ? `(${event.bundles.name})` : ''}
@@ -383,29 +379,6 @@ export const AdminScheduleMaster = ({
             );
           })}
         </div>
-      ) : (
-        /* Calendar View */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredEvents.map((event) => (
-            <Card key={event.id} className="p-4 border-l-4 border-l-primary">
-              <div className="text-xs font-bold text-primary mb-1">
-                {new Date(event.event_date).toLocaleDateString('id-ID', {
-                  weekday: 'short',
-                  day: 'numeric',
-                  month: 'short',
-                })}
-              </div>
-              <h4 className="font-bold text-slate-900 text-sm">{event.full_name}</h4>
-              <p className="text-xs text-slate-500 mt-1">{event.location || 'Lokasi N/A'}</p>
-              <div className="mt-3 flex items-center justify-between">
-                <StatusChip status={event.payment_status} />
-                <span className="text-xs font-medium text-slate-600">
-                  {event.event_workers?.length || 0}/{event.workers_needed} Kru
-                </span>
-              </div>
-            </Card>
-          ))}
-        </div>
       )}
 
       {/* Admin Verification & Proof View Modal */}
@@ -510,7 +483,10 @@ export const AdminScheduleMaster = ({
       {/* Assign Modal */}
       <Modal
         isOpen={!!selectedEventForAssign}
-        onClose={() => setSelectedEventForAssign(null)}
+        onClose={() => {
+          setSelectedEventForAssign(null);
+          setAssignError('');
+        }}
         title="Assign Staf Kru ke Event"
         maxWidth="max-w-md"
       >
@@ -519,6 +495,16 @@ export const AdminScheduleMaster = ({
             Tugaskan worker secara manual untuk acara{' '}
             <strong className="text-slate-800">{selectedEventForAssign?.full_name}</strong>.
           </p>
+          <div className="flex items-center gap-2 rounded-lg bg-primary/5 border border-primary/10 px-3 py-2 text-xs font-semibold text-primary">
+            <Calendar className="w-4 h-4 shrink-0" />
+            <span>
+              Tanggal acara: {selectedEventForAssign?.event_date
+                ? new Date(selectedEventForAssign.event_date).toLocaleDateString('id-ID', {
+                    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+                  })
+                : '-'}
+            </span>
+          </div>
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">Pilih Worker</label>
@@ -569,6 +555,23 @@ export const AdminScheduleMaster = ({
             </Button>
           </div>
         </form>
+      </Modal>
+
+      <Modal
+        isOpen={!!assignError}
+        onClose={() => setAssignError('')}
+        title="Worker Tidak Dapat Ditugaskan"
+        maxWidth="max-w-md"
+      >
+        <div className="space-y-4 text-center">
+          <div className="w-12 h-12 mx-auto rounded-full bg-amber-100 text-amber-600 flex items-center justify-center">
+            <AlertTriangle className="w-6 h-6" />
+          </div>
+          <p className="text-sm font-medium text-slate-800">{assignError}</p>
+          <Button type="button" onClick={() => setAssignError('')} className="w-full flex-row">
+            Mengerti
+          </Button>
+        </div>
       </Modal>
 
       {/* Remove Modal */}

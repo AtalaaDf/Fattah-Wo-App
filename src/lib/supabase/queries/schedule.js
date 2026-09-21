@@ -130,45 +130,14 @@ export async function requestEventCancel(eventWorkerId) {
  * Admin assigns a worker to a reservation
  */
 export async function assignWorkerByAdmin({ reservationId, workerId, roleNeeded = null }) {
-  const { data: existing } = await supabase
-    .from('event_workers')
-    .select('id')
-    .eq('reservation_id', reservationId)
-    .eq('worker_id', workerId)
-    .maybeSingle();
+  const { data, error } = await supabase.rpc('assign_worker_by_admin', {
+    p_reservation_id: reservationId,
+    p_worker_id: workerId,
+    p_role_needed: roleNeeded || 'Kru Acara',
+  });
 
-  if (existing && existing.id) {
-    const { data, error } = await supabase
-      .from('event_workers')
-      .update({
-        status: 'assigned',
-        role_needed: roleNeeded || 'Kru Acara',
-        assigned_at: new Date().toISOString(),
-        removed_by: null,
-        removed_reason: null,
-      })
-      .eq('id', existing.id)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  } else {
-    const { data, error } = await supabase
-      .from('event_workers')
-      .insert({
-        reservation_id: reservationId,
-        worker_id: workerId,
-        role_needed: roleNeeded || 'Kru Acara',
-        status: 'assigned',
-        assigned_at: new Date().toISOString(),
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  }
+  if (error) throw error;
+  return data;
 }
 
 /**
