@@ -32,7 +32,6 @@ export const AdminScheduleMaster = ({
 
   const [selectedEventToDelete, setSelectedEventToDelete] = useState(null);
 
-  // Admin View Proof & Verification Modal
   const [selectedEventForProof, setSelectedEventForProof] = useState(null);
   const [proofSignedUrl, setProofSignedUrl] = useState('');
   const [isLoadingProof, setIsLoadingProof] = useState(false);

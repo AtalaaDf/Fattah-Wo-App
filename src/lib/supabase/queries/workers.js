@@ -27,11 +27,6 @@ export async function getWorkers() {
 /**
  * Create a new worker account
  * Admin creates account with username & password.
- * Uses synthetic email: <username>@worker.fattahwo.internal
- *
- * WORKAROUND: supabase.auth.signUp() auto-logs into the new account,
- * which would log out the admin. We save the admin session first,
- * then restore it after signUp completes.
  */
 export async function createWorkerAccount({ fullName, username, password, adminId }) {
   const syntheticEmail = `worker_${username.toLowerCase().trim()}@gmail.com`;

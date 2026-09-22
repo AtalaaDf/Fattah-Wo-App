@@ -74,7 +74,6 @@ export const WorkerProfileForm = ({ details = {}, onSave, isSaving }) => {
       
       let finalPhotoUrl = data.profile_photo_url;
       
-      // Upload new file if selected
       if (selectedFile) {
         setIsUploading(true);
         try {

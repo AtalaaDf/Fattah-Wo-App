@@ -13,7 +13,6 @@ const navItems = [
   { label: 'Status Acara', path: '/client/schedule', icon: Clock },
 ];
 
-// Extra nav item: WA bantuan (tidak pakai NavLink karena external link)
 const WaBantuanLink = () => (
   <a
     href="https://wa.me/6281234567890"

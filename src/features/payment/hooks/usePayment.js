@@ -17,7 +17,6 @@ export function usePayment(reservationId) {
   });
 
   const submitProofMutation = useMutation({
-    // NOTE: totalAmount is admin-only, do NOT pass it from client
     mutationFn: ({ proofUrl, method, paymentType }) =>
       submitPaymentProofPhoto({ reservationId, proofUrl, method, paymentType }),
     onSuccess: () => {

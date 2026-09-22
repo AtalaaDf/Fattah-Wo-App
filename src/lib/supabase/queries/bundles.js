@@ -96,7 +96,6 @@ export async function updateBundle(bundleId, bundleData, features = []) {
 
   if (bundleError) throw bundleError;
 
-  // Replace features: delete existing, then insert new ones
   await supabase.from('bundle_features').delete().eq('bundle_id', bundleId);
 
   if (features && features.length > 0) {

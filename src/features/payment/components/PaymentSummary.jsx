@@ -342,7 +342,6 @@ export const PaymentSummary = ({ reservation, payment, onSubmitProof, onPostpone
         isOpen={isPostponeModalOpen}
         onClose={() => setIsPostponeModalOpen(false)}
         onConfirmPostpone={async ({ dpDueDate, fullDueDate }) => {
-          // NOTE: totalAmount removed — admin sets it after payment verification
           await onPostpone({ dpDueDate, fullDueDate });
         }}
         isSubmitting={isPostponing}

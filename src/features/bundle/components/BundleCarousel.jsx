@@ -5,7 +5,6 @@ import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
 
 export const BundleCarousel = ({ bundles = [], onSelectBundle, showSelectButton = false }) => {
-  // Max 5 active bundles for carousel as per AGENT.md requirements
   const activeBundles = bundles
     .filter((b) => b.is_active)
     .slice(0, 5);

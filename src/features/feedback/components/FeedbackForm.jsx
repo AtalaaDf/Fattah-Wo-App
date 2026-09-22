@@ -3,16 +3,6 @@ import { Star, Send, MessageCircle } from 'lucide-react';
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
 
-/**
- * FeedbackForm — Form client untuk memberikan rating bintang dan ulasan teks
- * setelah acara reservasi mereka selesai.
- *
- * Props:
- * - reservationId: string
- * - onSubmit: (data: { reservationId, rating, message }) => Promise<void>
- * - isSubmitting: boolean
- * - existingFeedback: object | null (jika sudah pernah submit)
- */
 export const FeedbackForm = ({ reservationId, onSubmit, isSubmitting = false, existingFeedback = null }) => {
   const [rating, setRating] = useState(existingFeedback?.rating ?? 0);
   const [hoverRating, setHoverRating] = useState(0);

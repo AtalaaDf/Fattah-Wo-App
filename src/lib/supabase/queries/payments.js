@@ -16,8 +16,6 @@ export async function getPaymentByReservationId(reservationId) {
 
 /**
  * Client uploads payment receipt photo (proof_url) + sets method & type.
- * The RPC calculates protected amounts server-side and verifies reservation ownership.
- * Storage path convention: payment-proofs/{reservationId}/filename
  */
 export async function submitPaymentProofPhoto({ reservationId, proofUrl, method, paymentType }) {
   const { data, error } = await supabase.rpc('submit_payment_proof', {
@@ -36,7 +34,6 @@ export async function submitPaymentProofPhoto({ reservationId, proofUrl, method,
  * Admin can also update admin_notes, paid_at, dp_amount, total_amount.
  */
 export async function adminUpdatePaymentStatus({ reservationId, paymentStatus, adminNotes, totalAmount, dpAmount }) {
-  // Update payment_status in reservations table
   const { data: reservationData, error: resError } = await supabase
     .from('reservations')
     .update({

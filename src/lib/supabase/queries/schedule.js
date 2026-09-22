@@ -179,7 +179,6 @@ export async function deleteReservation(reservationId) {
 
 /**
  * Automatically clean up (delete) reservations that have passed their event date or due dates without being paid.
- * Keeps Supabase database light and clean.
  */
 export async function autoCleanupExpiredReservations() {
   try {

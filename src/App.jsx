@@ -7,7 +7,6 @@ import { supabase } from './lib/supabase/client'
 import { fetchProfile } from './lib/supabase/queries/auth'
 import { useAuthStore } from './store/useAuthStore'
 
-// Initialize TanStack Query client for server state management (Supabase)
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -24,7 +23,6 @@ function AuthProvider({ children }) {
   const clearAuth = useAuthStore((state) => state.clearAuth)
 
   useEffect(() => {
-    // Subscribe to auth state changes (handles refresh, tab restore, sign-in, sign-out)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
@@ -33,7 +31,6 @@ function AuthProvider({ children }) {
             if (profile) {
               setAuth(session.user, profile)
             } else {
-              // Profile not ready yet (e.g. trigger delay), retry once
               setTimeout(async () => {
                 const retryProfile = await fetchProfile(session.user.id)
                 if (retryProfile) setAuth(session.user, retryProfile)
