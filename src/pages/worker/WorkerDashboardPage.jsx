@@ -46,7 +46,7 @@ export const WorkerDashboardPage = () => {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-primary">
-            Halo, {profile?.full_name?.split(' ')[0] || 'Worker'} 👋
+            Halo, {profile?.full_name?.split(' ')[0] || 'Worker'}
           </h1>
           <p className="text-sm text-slate-500 mt-1">
             Ringkasan statistik kerja dan jadwal acara terdekat Anda.

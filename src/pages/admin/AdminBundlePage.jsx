@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useBundles } from '../../features/bundle/hooks/useBundles';
 import AdminBundleList from '../../features/bundle/components/AdminBundleList';
-import BundleFormModal from '../../features/bundle/components/BundleFormModal';
+import BundleFormModal from '../../features/bundle/components/bundle-form-modal/BundleFormModal';
 import { Package } from 'lucide-react';
 
 export const AdminBundlePage = () => {

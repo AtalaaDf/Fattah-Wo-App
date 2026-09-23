@@ -1,6 +1,6 @@
 import React from 'react';
 import { useWorkerProfile } from '../../features/worker-profile/hooks/useWorkerProfile';
-import WorkerProfileForm from '../../features/worker-profile/components/WorkerProfileForm';
+import WorkerProfileForm from '../../features/worker-profile/components/worker-profile-form/WorkerProfileForm';
 import { UserCheck } from 'lucide-react';
 
 export const WorkerProfilePage = () => {

@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useReservation } from '../../features/reservation/hooks/useReservation';
 import { useBundles } from '../../features/bundle/hooks/useBundles';
 import { useAuthStore } from '../../store/useAuthStore';
-import ReservationForm from '../../features/reservation/components/ReservationForm';
+import ReservationForm from '../../features/reservation/components/reservation-form/ReservationForm';
 import { PlusCircle } from 'lucide-react';
 
 export const ClientNewReservationPage = () => {

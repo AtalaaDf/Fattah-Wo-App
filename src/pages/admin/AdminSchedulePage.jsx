@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSchedule } from '../../features/schedule/hooks/useSchedule';
 import { useWorkerManagement } from '../../features/worker-management/hooks/useWorkerManagement';
-import AdminScheduleMaster from '../../features/schedule/components/AdminScheduleMaster';
+import AdminScheduleMaster from '../../features/schedule/components/admin-schedule-master/AdminScheduleMaster';
 import { Calendar } from 'lucide-react';
 
 export const AdminSchedulePage = () => {

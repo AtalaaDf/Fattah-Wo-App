@@ -2,7 +2,7 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useReservation } from '../../features/reservation/hooks/useReservation';
 import { usePayment } from '../../features/payment/hooks/usePayment';
-import PaymentSummary from '../../features/payment/components/PaymentSummary';
+import PaymentSummary from '../../features/payment/components/payment-summary/PaymentSummary';
 import { CreditCard } from 'lucide-react';
 
 export const ClientPaymentPage = () => {
