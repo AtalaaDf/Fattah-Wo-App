@@ -3,19 +3,6 @@ import { NavLink, Link } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 import Logo from './Logo';
 
-/**
- * Sidebar — komponen modular yang dipakai oleh AdminLayout, WorkerLayout, ClientLayout.
- *
- * Props:
- * - navItems: Array<{ label, path, icon }>
- * - homeLink: string  — path untuk logo klik (e.g. '/admin/dashboard')
- * - username: string  — nama user yang ditampilkan di bagian bawah sidebar
- * - roleLabel: string — label peran (e.g. 'Admin', 'Worker / Kru', 'Client Pemesan')
- * - isMobileOpen: boolean
- * - onClose: () => void   — dipanggil saat nav item diklik (menutup drawer mobile)
- * - onLogout: () => void
- * - extraNavItems?: ReactNode — elemen tambahan di bawah nav (e.g. link WA client)
- */
 export const Sidebar = ({
   navItems = [],
   homeLink = '/',
