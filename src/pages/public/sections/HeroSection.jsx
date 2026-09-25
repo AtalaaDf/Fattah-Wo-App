@@ -51,7 +51,7 @@ export const HeroSection = () => {
             </h1>
 
             <p className="text-slate-200 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
-              Platform manajemen acara & jasa wedding organizer profesional. Mewujudkan pernikahan impian Anda dengan koordinasi tim kru yang terstruktur dan terpercaya.
+              Fattah Wedding Organizer hadir untuk mewujudkan pernikahan impian Anda. Dari perencanaan hingga pelaksanaan, kami memastikan setiap detail sempurna.
             </p>
           </motion.div>
 

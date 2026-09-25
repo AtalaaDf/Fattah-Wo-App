@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { LANDING_FEATURES } from '../landingData';
-import { FEATURES_PHOTOS, HOVER_ZOOM } from '../landingImages';
+import { CREW_CLOUDS, FEATURES_PHOTOS, HOVER_ZOOM } from '../landingImages';
 import { fadeInUp, stagger } from './animations';
 
 export const FeaturesSection = () => {
@@ -24,11 +24,17 @@ export const FeaturesSection = () => {
 
       <div className="flex items-center justify-between w-full">
         {/* Left crew cutout */}
-        <motion.div variants={fadeInUp} className="hidden lg:block w-[20rem] shrink-0 rounded-2xl">
+        <motion.div variants={fadeInUp} className="hidden lg:block w-[20rem] shrink-0 rounded-2xl relative">
           <img
             src={FEATURES_PHOTOS.left.src}
             alt={FEATURES_PHOTOS.left.alt}
             className={`w-full h-auto object-contain drop-shadow-xl ${HOVER_ZOOM}`}
+          />
+          <img
+            src={CREW_CLOUDS.aqilNala}
+            alt=""
+            aria-hidden="true"
+            className="absolute -bottom-20 left-1/2 z-30 w-96 -translate-x-1/2 pointer-events-none"
           />
         </motion.div>
 
@@ -53,11 +59,17 @@ export const FeaturesSection = () => {
         </div>
 
         {/* Right crew cutout */}
-        <motion.div variants={fadeInUp} className="hidden xl:block w-[20rem] shrink-0 rounded-2xl">
+        <motion.div variants={fadeInUp} className="hidden xl:block w-[20rem] shrink-0 rounded-2xl relative">
           <img
             src={FEATURES_PHOTOS.right.src}
             alt={FEATURES_PHOTOS.right.alt}
             className={`w-full h-auto object-contain drop-shadow-xl ${HOVER_ZOOM}`}
+          />
+          <img
+            src={CREW_CLOUDS.rasya}
+            alt=""
+            aria-hidden="true"
+            className="absolute -bottom-28 left-1/2 z-30 w-72 -translate-x-1/2 pointer-events-none"
           />
         </motion.div>
       </div>

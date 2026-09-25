@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { LANDING_STATS } from '../landingData';
-import { STATS_PHOTOS, HOVER_ZOOM } from '../landingImages';
+import { CREW_CLOUDS, STATS_PHOTOS, HOVER_ZOOM } from '../landingImages';
 import { fadeInUp, stagger } from './animations';
 
 export const StatsSection = () => {
@@ -30,6 +30,12 @@ export const StatsSection = () => {
               src={STATS_PHOTOS.left.front.src}
               alt={STATS_PHOTOS.left.front.alt}
               className={`w-full h-auto object-contain drop-shadow-2xl ${HOVER_ZOOM}`}
+            />
+            <img
+              src={CREW_CLOUDS.ana}
+              alt=""
+              aria-hidden="true"
+              className="absolute -bottom-28 left-1/2 z-30 w-72 -translate-x-1/2 pointer-events-none"
             />
           </div>
         </motion.div>
@@ -70,6 +76,12 @@ export const StatsSection = () => {
               src={STATS_PHOTOS.right.front.src}
               alt={STATS_PHOTOS.right.front.alt}
               className={`w-full h-auto object-contain drop-shadow-2xl ${HOVER_ZOOM}`}
+            />
+            <img
+              src={CREW_CLOUDS.alipAtala}
+              alt=""
+              aria-hidden="true"
+              className="absolute -bottom-28 left-7/12 z-30 w-96 -translate-x-1/2 scale-x-[-1] pointer-events-none"
             />
           </div>
         </motion.div>

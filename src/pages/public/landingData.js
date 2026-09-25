@@ -30,8 +30,8 @@ export const LANDING_FEATURES = [
 export const LANDING_STATS = [
   { icon: Star,         value: '4.9/5',   label: 'Rating Kepuasan' },
   { icon: Users,        value: '200+',    label: 'Klien Puas' },
-  { icon: CheckCircle2, value: '350+',    label: 'Acara Sukses' },
-  { icon: Clock,        value: '5 Tahun', label: 'Pengalaman' },
+  { icon: CheckCircle2, value: '200+',    label: 'Acara Sukses' },
+  { icon: Clock,        value: '2 Tahun', label: 'Pengalaman' },
 ];
 
 // FAQ Items
